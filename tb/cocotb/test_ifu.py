@@ -84,6 +84,7 @@ class IfuTB(BaseBench):
                 if instrp[1] & 0b11 == 0b11:
                     ostane = False
                     blob += f"{instrp[1]:08X}"
+                    ostanek = 0
                 else:
                 # 16 bit
                     ostane = True
@@ -101,6 +102,9 @@ class IfuTB(BaseBench):
                     ostane = False
                     blob += f"{instrp[1]:04X}" + f"{ostanek:04X}"
                     ostanek = 0
+
+        if ostanek != 0:
+                blob += f"{ostanek:08X}"
 
         return blob
 

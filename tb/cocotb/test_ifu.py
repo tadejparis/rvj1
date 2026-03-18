@@ -13,6 +13,8 @@ import os
 from base import WAVES, RVFI, RVFI_TRACE, ASSERTIONS
 from cocotb_tools.runner import get_runner
 
+import random
+
 class IfuTB(BaseBench):
     def __init__(self, dut):
         super().__init__(dut, clk=dut.clk_i, rst=dut.rstn_i, rst_active_high=False)
@@ -42,6 +44,30 @@ class IfuTB(BaseBench):
 
         
 		
+    def generate_random_instruction():
+        # either 16 or 32 bit
+        if random.randint(0,1) == 0:
+            # 16 bit
+            op = random.choice([0b00, 0b01, 0b10])
+            rest = random.getrandbits(14)
+            instr = (rest << 2) | op
+            return instr
+        else:
+            op = 0b11
+            rest = random.getrandbits(30)
+            instr= (rest << 2) | op
+            return instr
+
+    
+    def generate_random_memory(n: int) -> list[int]:
+        instrs = []
+        for _ in range(n):
+            instrs.append(generate_random_instruction())
+        return instrs
+    
+
+
+
 
     async def initialise(self) -> None:
         """Initialise the DUT's I/O"""

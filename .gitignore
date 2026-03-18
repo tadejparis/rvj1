@@ -5,3 +5,4 @@ venv/
 *xsim.dir
 *xvlog.log
 *xvlog.pb
+tb/cocotb/ifu_test_mem.hex

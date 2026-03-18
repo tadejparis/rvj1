@@ -103,7 +103,6 @@ class IfuTB(BaseBench):
                     ostanek = 0
 
         return blob
-            # TODO fixed padding?
 
 
     def insert_newlines(self, string, every=64):

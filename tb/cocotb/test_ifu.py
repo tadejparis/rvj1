@@ -39,6 +39,8 @@ class IfuTB(BaseBench):
 
         # push references to scoreboard
         for instrp in self.instrs:
+            print(instrp[0])
+            print(f"{instrp[1]:X}\n")
             self.scoreboard.channels["dec_mon"].push_reference(InstrAddrResponse(instr=instrp[1]))
 
 
@@ -50,6 +52,7 @@ class IfuTB(BaseBench):
             self.counter = int(((addr - 0x8000_0000) / 4) + 1)
 
     def generate_random_memory(self, n: int) -> list[int]:
+        random.seed(10)
         instrs = []
         pc = 0
         for _ in range(n):
@@ -71,10 +74,50 @@ class IfuTB(BaseBench):
 
         return instrs
 
+    def instrs_to_mem(self):
+        blob = ""
+        ostanek = 0
+        ostane = False
+        for instrp in self.instrs:
+            if not ostane:
+                # 32 bit
+                if instrp[1] & 0b11 == 0b11:
+                    ostane = False
+                    blob += f"{instrp[1]:08X}"
+                else:
+                # 16 bit
+                    ostane = True
+                    ostanek = instrp[1]
+            else:
+                if instrp[1] & 0b11 == 0b11:
+                # 32 bit
+                    ostane = True
+                    leva = (instrp[1] >> 16) & 0xFFFF 
+                    desna = instrp[1] & 0xFFFF 
+                    blob += f"{desna:04X}" + f"{ostanek:04X}"
+                    ostanek = leva
+                else:
+                # 16 bit
+                    ostane = False
+                    blob += f"{instrp[1]:04X}" + f"{ostanek:04X}"
+                    ostanek = 0
+
+        return blob
+            # TODO fixed padding?
+
+
+    def insert_newlines(self, string, every=64):
+        lines = []
+        for i in range(0, len(string), every):
+            lines.append(string[i:i+every])
+        return '\n'.join(lines)
+
     def write_to_memory_file(self, instrs: list[int]):
         with open('/foss/designs/rvj1/tb/cocotb/ifu_test_mem.hex', 'w+') as f:
-            for instr in instrs:
-                f.write(f"{instr[1]:X}\n")
+            blob = self.instrs_to_mem()
+            blob = self.insert_newlines(blob, 8)
+            f.write(blob)
+                #f.write(f"{instr[1]:X}\n")
 
     async def initialise(self) -> None:
         """Initialise the DUT's I/O"""

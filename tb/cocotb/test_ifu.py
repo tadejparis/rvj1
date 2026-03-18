@@ -45,29 +45,28 @@ class IfuTB(BaseBench):
             addr = int(self.dut.jmp_addr_i.value)
             self.counter = int(((addr - 0x8000_0000) / 4) + 1)
 
-        
-		
-    def generate_random_instruction(self):
-        # either 16 or 32 bit
-        if random.randint(0,1) == 0:
-            # 16 bit
-            op = random.choice([0b00, 0b01, 0b10])
-            rest = random.getrandbits(14)
-            instr = (rest << 2) | op
-            return instr
-        else:
-            op = 0b11
-            rest = random.getrandbits(30)
-            instr= (rest << 2) | op
-            return instr
-
-    
     def generate_random_memory(self, n: int) -> list[int]:
-        instrs = []
+        pc = []
+        line_num = 0
         for _ in range(n):
-            instrs.append(self.generate_random_instruction())
+            # either 16 or 32 bit
+            if random.randint(0,1) == 0:
+                # 16 bit
+                op = random.choice([0b00, 0b01, 0b10])
+                rest = random.getrandbits(14)
+                instrp = (line_num, (rest << 2) | op)
+                instrs.append(instrp)
+                pc += 1
+            else:
+                # 32 bit
+                op = 0b11
+                rest = random.getrandbits(30)
+                instrp = (line_num, (rest << 2) | op)
+                instrs.append(instrp)
+                pc += 2
+
         return instrs
-    
+
     def write_to_memory_file(self, instrs: list[int]):
         with open('/foss/designs/rvj1/tb/cocotb/ifu_test_mem.hex', 'w+') as f:
             for instr in instrs:

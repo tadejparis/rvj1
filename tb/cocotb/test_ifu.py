@@ -34,6 +34,9 @@ class IfuTB(BaseBench):
         self.dec_mon.subscribe(MonitorEvent.CAPTURE, self.push_reference)
         self.counter = 1
 
+        instrs = self.generate_random_memory(64)
+        self.write_to_memory_file(instrs)
+
 
     def push_reference(self, monitor, event, obj) -> None:
         self.scoreboard.channels["dec_mon"].push_reference(InstrAddrResponse(instr=self.counter))
@@ -44,7 +47,7 @@ class IfuTB(BaseBench):
 
         
 		
-    def generate_random_instruction():
+    def generate_random_instruction(self):
         # either 16 or 32 bit
         if random.randint(0,1) == 0:
             # 16 bit
@@ -59,15 +62,17 @@ class IfuTB(BaseBench):
             return instr
 
     
-    def generate_random_memory(n: int) -> list[int]:
+    def generate_random_memory(self, n: int) -> list[int]:
         instrs = []
         for _ in range(n):
-            instrs.append(generate_random_instruction())
+            instrs.append(self.generate_random_instruction())
         return instrs
     
-
-
-
+    def write_to_memory_file(self, instrs: list[int]):
+        with open('/foss/designs/rvj1/tb/cocotb/ifu_test_mem.hex', 'w+') as f:
+            for instr in instrs:
+                f.write(f"{instr:X}\n")
+            f.write("testing")
 
     async def initialise(self) -> None:
         """Initialise the DUT's I/O"""

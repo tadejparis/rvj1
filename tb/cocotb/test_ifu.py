@@ -31,11 +31,15 @@ class IfuTB(BaseBench):
             IfuJmpInitiator(self, ifu_jmp_io, self.clk, self.rst)
         )
         self.register("err_mon", IfuErrorMonitor(self, ifu_err_io, self.clk, self.rst))
-        self.dec_mon.subscribe(MonitorEvent.CAPTURE, self.push_reference)
-        self.counter = 1
+        #self.dec_mon.subscribe(MonitorEvent.CAPTURE, self.push_reference)
+        #self.counter = 1
 
-        instrs = self.generate_random_memory(64)
-        self.write_to_memory_file(instrs)
+        self.instrs = self.generate_random_memory(64)
+        self.write_to_memory_file(self.instrs)
+
+        # push references to scoreboard
+        for instrp in self.instrs:
+            self.scoreboard.channels["dec_mon"].push_reference(InstrAddrResponse(instr=instrp[1]))
 
 
     def push_reference(self, monitor, event, obj) -> None:

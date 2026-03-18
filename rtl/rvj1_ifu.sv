@@ -99,6 +99,24 @@ module rvj1_ifu(
     /*************************************
     * Response buffering
     *************************************/
+    // skidbuffer #(
+    //     .WORD_WIDTH ($bits(ifu_rsp_t))
+    // ) response_buffer (
+    // .clk  (clk_i),
+    // .rstn (rstn_i && ~(state == eIFU_JMP)),
+
+    // .input_valid  (instr_rsp_valid_i),
+    // .input_ready  (instr_rsp_ready_o),
+    // .input_data   ({instr_rsp_data_i, instr_rsp_error_i}),
+
+    // .output_valid (response_valid),
+    // .output_ready (response_ready),
+    // .output_data  ({dec_instr_o, dec_error_o}),
+
+    // // verilator lint_off PINCONNECTEMPTY
+    // .empty        ()
+    // // verilator lint_on PINCONNECTEMPTY
+    // );
 
     fifo_comp #(
         .DEPTH(4)
@@ -108,12 +126,14 @@ module rvj1_ifu(
 
         .input_ready_o (instr_rsp_ready_o),
         .input_valid_i (instr_rsp_valid_i),
-        .input_data_i  ({instr_rsp_data_i, instr_rsp_error_i}),
+        .input_data_i  (instr_rsp_data_i),
 
         .output_ready_i (response_ready),
         .output_valid_o (response_valid),
-        .output_data_o  ({dec_instr_o, dec_error_o})
+        .output_data_o  (dec_instr_o)
     );
+
+    assign dec_error_o = 1'b0; // TODO
 
     // We wait for the previous instruction to finish even if we just want to raise
     // an exception. This is because exceptions must be precise

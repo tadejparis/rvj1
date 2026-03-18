@@ -20,7 +20,7 @@ module fifo_comp #(
 
     input  logic        output_ready_i,
     output logic        output_valid_o,
-    output logic [31:0] output_data_o,
+    output logic [31:0] output_data_o
 );
   reg [15:0] mem[DEPTH];
   logic [$clog2(DEPTH)-1:0] read_ptr, write_ptr, read_ptr_next, write_ptr_next;
@@ -31,12 +31,12 @@ module fifo_comp #(
   assign output_fire = output_ready_i && output_valid_o;
 
   // Next pointer
-  always_ff @(posedge clk_i) begin
+  always_comb begin
     // Check if 32 bit else compressed
       if (mem[read_ptr][1:0] == 2'b11) begin
-        read_ptr_next <= read_ptr + 2;
+        read_ptr_next = read_ptr + 2;
       end else begin
-        read_ptr_next <= read_ptr + 1;
+        read_ptr_next = read_ptr + 1;
       end
   end
   assign write_ptr_next = write_ptr + 2;
@@ -73,7 +73,7 @@ module fifo_comp #(
       end
     else if (input_fire && output_fire && mem[read_ptr][1:0] != 2'b11) begin
       // both read and write, reading 16 bit
-      fifo_counter <= fifo_counter - 1;
+      fifo_counter <= fifo_counter + 1;
     end
   end
 
@@ -85,12 +85,12 @@ module fifo_comp #(
     end
   end
   // Output data
-  always_ff @(posedge clk_i) begin
+  always_comb begin
     // Check if 32 bit else compressed
     if (mem[read_ptr][1:0] == 2'b11) begin
-      output_data_o <= {mem[read_ptr + 1], mem[read_ptr]};
+      output_data_o = {mem[read_ptr + 1], mem[read_ptr]};
     end else begin
-      output_data_o <= {16'b0, mem[read_ptr]}; // zero-padded compressed
+      output_data_o = {16'b0, mem[read_ptr]}; // zero-padded compressed
     end
   end
 

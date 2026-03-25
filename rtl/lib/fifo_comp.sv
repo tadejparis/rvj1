@@ -98,10 +98,10 @@ module fifo_comp #(
   always_comb begin
     if (mem[read_ptr][1:0] == 2'b11) begin
       // 32 bit: assure at least two parcels remain in FIFO to be read
-      output_valid_o = fifo_counter > 1;
+      output_valid_o = fifo_counter > 1 && (rstn_i);
     end else begin
       // 16 bit: we can read a single parcel
-      output_valid_o = fifo_counter > 0;
+      output_valid_o = fifo_counter > 0 && (rstn_i);
     end
   end
 

@@ -32,43 +32,62 @@ class IfuTB(BaseBench):
         )
         self.register("err_mon", IfuErrorMonitor(self, ifu_err_io, self.clk, self.rst))
 
-        self.instrs = self.generate_random_memory(64)
-        self.write_to_memory_file(self.instrs)
+        self.instrs_list, self.instrs_dict = self.generate_random_memory(64)
+        self.write_to_memory_file(self.instrs_list)
 
-        # push references to scoreboard
-        for instrp in self.instrs:
-            print(instrp[0])
-            print(f"{instrp[1]:X}\n")
-            self.scoreboard.channels["dec_mon"].push_reference(InstrAddrResponse(instr=instrp[1]))
+        self.dec_mon.subscribe(MonitorEvent.CAPTURE, self.push_reference)
+        self.pc = 0
 
-    def generate_random_memory(self, n: int) -> list[int]:
+        # debug
+        for instrp in self.instrs_list:
+            print("instr:" + f"{instrp[1]:X}" + " (" + str(instrp[0]) + ")\n")
+
+    def push_reference(self, monitor, event, obj) -> None:
+        # ignoriraj zadnji 0x00000000
+
+        print("obj: " + f"{obj.instr:X}\n")
+        print("pc: " + str(self.pc) + "\n")
+        self.scoreboard.channels["dec_mon"].push_reference(InstrAddrResponse(instr=self.instrs_dict[self.pc]))
+        if self.instrs_dict[self.pc] & 0b11 == 0b11:
+            self.pc += 4
+        else:
+            self.pc += 2
+        
+        if self.dut.jmp_addr_valid_i.value == 1:
+            addr = int(self.dut.jmp_addr_i.value)
+            self.pc = int((addr - 0x8000_0000))
+
+    def generate_random_memory(self, n: int) -> (list[int], dict):
         random.seed(10)
-        instrs = []
-        pc = 0
+        instrs_list = []
+        instrs_dict = {}
+        instr_pc = 0
         for _ in range(n):
             # either 16 or 32 bit
             if random.randint(0,1) == 0:
                 # 16 bit
                 op = random.choice([0b00, 0b01, 0b10])
                 rest = random.getrandbits(14)
-                instrp = (pc, (rest << 2) | op)
-                instrs.append(instrp)
-                pc += 2
+                instrp = (instr_pc, (rest << 2) | op)
+                instrs_list.append(instrp)
+                instrs_dict.setdefault(instr_pc, instrp[1])
+                instr_pc += 2
             else:
                 # 32 bit
                 op = 0b11
                 rest = random.getrandbits(30)
-                instrp = (pc, (rest << 2) | op)
-                instrs.append(instrp)
-                pc += 4
+                instrp = (instr_pc, (rest << 2) | op)
+                instrs_list.append(instrp)
+                instrs_dict.setdefault(instr_pc, instrp[1])
+                instr_pc += 4
 
-        return instrs
+        return instrs_list, instrs_dict
 
     def instrs_to_mem(self):
         blob = ""
         ostanek = 0
         ostane = False
-        for instrp in self.instrs:
+        for instrp in self.instrs_list:
             if not ostane:
                 # 32 bit
                 if instrp[1] & 0b11 == 0b11:
@@ -106,7 +125,7 @@ class IfuTB(BaseBench):
             lines.append(string[i:i+every])
         return '\n'.join(lines)
 
-    def write_to_memory_file(self, instrs: list[int]):
+    def write_to_memory_file(self, instrs_list: list[int]):
         with open('/foss/designs/rvj1/tb/cocotb/ifu_test_mem.hex', 'w+') as f:
             blob = self.instrs_to_mem()
             blob = self.insert_newlines(blob, 8)
@@ -184,7 +203,7 @@ async def run_and_jump(tb: IfuTB, log):
     log.info("Using the jump interface to set the IFU (boot) address.")
     tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0000))
     await ClockCycles(tb.clk, 50)
-    tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_006c))
+    tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0070))
     await ClockCycles(tb.clk, 50)
 
 

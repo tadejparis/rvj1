@@ -31,8 +31,6 @@ class IfuTB(BaseBench):
             IfuJmpInitiator(self, ifu_jmp_io, self.clk, self.rst)
         )
         self.register("err_mon", IfuErrorMonitor(self, ifu_err_io, self.clk, self.rst))
-        #self.dec_mon.subscribe(MonitorEvent.CAPTURE, self.push_reference)
-        #self.counter = 1
 
         self.instrs = self.generate_random_memory(64)
         self.write_to_memory_file(self.instrs)
@@ -42,14 +40,6 @@ class IfuTB(BaseBench):
             print(instrp[0])
             print(f"{instrp[1]:X}\n")
             self.scoreboard.channels["dec_mon"].push_reference(InstrAddrResponse(instr=instrp[1]))
-
-
-    def push_reference(self, monitor, event, obj) -> None:
-        self.scoreboard.channels["dec_mon"].push_reference(InstrAddrResponse(instr=self.counter))
-        self.counter += 1
-        if self.dut.jmp_addr_valid_i.value == 1:
-            addr = int(self.dut.jmp_addr_i.value)
-            self.counter = int(((addr - 0x8000_0000) / 4) + 1)
 
     def generate_random_memory(self, n: int) -> list[int]:
         random.seed(10)
@@ -63,14 +53,14 @@ class IfuTB(BaseBench):
                 rest = random.getrandbits(14)
                 instrp = (pc, (rest << 2) | op)
                 instrs.append(instrp)
-                pc += 1
+                pc += 2
             else:
                 # 32 bit
                 op = 0b11
                 rest = random.getrandbits(30)
                 instrp = (pc, (rest << 2) | op)
                 instrs.append(instrp)
-                pc += 2
+                pc += 4
 
         return instrs
 
@@ -103,6 +93,7 @@ class IfuTB(BaseBench):
                     blob += f"{instrp[1]:04X}" + f"{ostanek:04X}"
                     ostanek = 0
 
+        # na koncu če ostane 16 bit število
         if ostanek != 0:
                 blob += f"{ostanek:08X}"
 

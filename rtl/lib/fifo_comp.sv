@@ -94,6 +94,17 @@ module fifo_comp #(
     end
   end
 
+  // fifo not empty?
+  always_comb begin
+    if (mem[read_ptr][1:0] == 2'b11) begin
+      // 32 bit: assure at least two parcels remain in FIFO to be read
+      output_valid_o = fifo_counter > 1;
+    end else begin
+      // 16 bit: we can read a single parcel
+      output_valid_o = fifo_counter > 0;
+    end
+  end
+
+
   assign input_ready_o  = fifo_counter < DEPTH - 1;  // FIFO not full
-  assign output_valid_o = fifo_counter > 0;          // FIFO not empty
 endmodule

@@ -58,7 +58,7 @@ class IfuTB(BaseBench):
             self.pc = int((addr - 0x8000_0000))
 
     def generate_random_memory(self, n: int) -> (list[int], dict):
-        random.seed(10)
+        random.seed(23)
         instrs_list = []
         instrs_dict = {}
         instr_pc = 0
@@ -201,9 +201,13 @@ async def run_and_jump(tb: IfuTB, log):
     log.info("Scheduling random backpressure on the decoder interface.")
     tb.schedule(dec_backpressure_seq(dec=tb.dec_resp_drv), blocking=False)
     log.info("Using the jump interface to set the IFU (boot) address.")
+    addr = random.choice(list(tb.instrs_dict.keys()))
+#    print("ADDR: " + str(addr))
     tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0000))
     await ClockCycles(tb.clk, 50)
-    tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0070))
+#    tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0000 + addr))
+    tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_003e))
+    print(str(0x3e))
     await ClockCycles(tb.clk, 50)
 
 

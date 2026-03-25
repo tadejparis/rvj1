@@ -6,7 +6,9 @@ import rvj1_defines::*;
 
 module decomp (
     input  logic [31:0]     instr_i,
-    output logic [31:0]     instr_o
+    output logic [31:0]     instr_o,
+
+    output logic            illegal_instr_o
     );
 
   always_comb begin
@@ -39,7 +41,7 @@ module decomp (
           end
 
           default: begin
-            instr_o = 32'b00000000_00000000_00000000_00000000;
+            illegal_instr_o = 1'b1;
           end
         endcase
       end
@@ -79,7 +81,7 @@ module decomp (
                          instr_i[6], 4'b0, 5'h02, 3'b000, 5'h02, {OPCODE_OPIMM}};
             end
 
-            if ({instr_i[12], instr_i[6:2]} == 6'b0) instr_o = 32'b0; 
+            if ({instr_i[12], instr_i[6:2]} == 6'b0) illegal_instr_o = 1'b1; 
           end
 
           3'b100: begin
@@ -91,7 +93,7 @@ module decomp (
                 // (c.srli/c.srai hints are translated into a srli/srai hint)
                 instr_o = {1'b0, instr_i[10], 5'b0, instr_i[6:2], 2'b01, instr_i[9:7],
                            3'b101, 2'b01, instr_i[9:7], {OPCODE_OPIMM}};
-                if (instr_i[12] == 1'b1)  instr_o = 32'b0;
+                if (instr_i[12] == 1'b1)  illegal_instr_o = 1'b1;
               end
 
               2'b10: begin
@@ -130,27 +132,27 @@ module decomp (
                   3'b101: begin
                     // 100: c.subw
                     // 101: c.addw
-                    instr_o = 32'b0; // subw, addw are reserved for future standard extensions
+                    illegal_instr_o = 1'b1; // subw, addw are reserved for future standard extensions
                   end
 
                   3'b110: begin
                       // The Zcb extension is not enabled
-                      instr_o = 32'b0;
+                      illegal_instr_o = 1'b1;
                   end
 
                   3'b111: begin
                       // The Zcb extension is not enabled
-                      instr_o = 32'b0;
+                      illegal_instr_o = 1'b1;
                   end
 
                   default: begin
-                    instr_o = 32'b0; // TODO -- ali rabmo oba? tega in spodnjega?
+                    illegal_instr_o = 1'b1; // TODO -- ali rabmo oba? tega in spodnjega?
                   end
                 endcase
               end
 
               default: begin
-                instr_o = 32'b0; 
+                illegal_instr_o = 1'b1; 
               end
             endcase
           end
@@ -162,7 +164,7 @@ module decomp (
                        instr_i[12], {OPCODE_BRANCH}};
           end
           default: begin
-            instr_o = 32'b0;
+            illegal_instr_o = 1'b1;
           end
           endcase
       end
@@ -173,14 +175,14 @@ module decomp (
             // c.slli -> slli rd, rd, shamt
             // (c.ssli hints are translated into a slli hint)
             instr_o = {7'b0, instr_i[6:2], instr_i[11:7], 3'b001, instr_i[11:7], {OPCODE_OPIMM}};
-            if (instr_i[12] == 1'b1)  instr_o = 32'b0; // reserved for custom extensions
+            if (instr_i[12] == 1'b1)  illegal_instr_o = 1'b1; // reserved for custom extensions
           end
 
           3'b010: begin
             // c.lwsp -> lw rd, imm(x2)
             instr_o = {4'b0, instr_i[3:2], instr_i[12], instr_i[6:4], 2'b00, 5'h02,
                        3'b010, instr_i[11:7], OPCODE_LOAD};
-            if (instr_i[11:7] == 5'b0)  instr_o = 32'b0;
+            if (instr_i[11:7] == 5'b0)  illegal_instr_o = 1'b1;
           end
 
           3'b100: begin
@@ -192,7 +194,7 @@ module decomp (
               end else begin
                 // c.jr -> jalr x0, rd/rs1, 0
                 instr_o = {12'b0, instr_i[11:7], 3'b0, 5'b0, {OPCODE_JALR}};
-                if (instr_i[11:7] == 5'b0) instr_o = 32'b0;
+                if (instr_i[11:7] == 5'b0) illegal_instr_o = 1'b1;
               end
             end else begin
               if (instr_i[6:2] != 5'b0) begin
@@ -216,12 +218,12 @@ module decomp (
                        instr_i[11:9], 2'b00, {OPCODE_STORE}};
           end
           default: begin
-            instr_o = 32'b0; 
+            illegal_instr_o = 1'b1; 
           end
         endcase
       end
       default: begin
-        instr_o = 32'b0; 
+        illegal_instr_o = 1'b1; 
       end
     endcase
   end

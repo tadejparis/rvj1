@@ -68,7 +68,7 @@ module ifu_mem_test_top #(
         .dec_error_o       (dec_error_o),
 
         .jmp_addr_valid_i  (jmp_addr_valid_i),
-        .jmp_addr_i        (jmp_addr_i[31:2])
+        .jmp_addr_i        (jmp_addr_i[31:1])
     );
 
     bytewrite_sram_wrap #(

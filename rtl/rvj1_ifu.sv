@@ -122,7 +122,7 @@ module rvj1_ifu(
     ifu_strobe_e      next_strobe;
     ifu_strobe_e      dec_strobe;
     logic [IDLEN-1:0] next_id;
-    logic [IDLEN-1:0] next_exp_id;
+    logic [IDLEN-1:0] exp_id;
     logic [IDLEN-1:0] dec_id;
     logic             consume_id;
 
@@ -183,7 +183,7 @@ module rvj1_ifu(
     );
     skidbuffer #(
         .WORD_WIDTH(IDLEN)
-    ) next_id_buff (
+    ) exp_id_buff (
         .clk  (clk_i),
         .rstn (rstn_i && ~jmp_addr_valid_i),
 
@@ -193,7 +193,7 @@ module rvj1_ifu(
 
         .output_valid (act_id_buff_out_valid),
         .output_ready (dec_valid_o),
-        .output_data  (next_exp_id),
+        .output_data  (exp_id),
 
         // verilator lint_off PINCONNECTEMPTY
         .empty        ()
@@ -247,7 +247,7 @@ module rvj1_ifu(
     /*************************************
     * Decoder Interface
     *************************************/
-    assign id_match = (dec_id == next_exp_id);
+    assign id_match = (dec_id == exp_id);
     assign dec_valid_o = consume_id && id_match;
 
     /*************************************

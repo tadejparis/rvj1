@@ -93,6 +93,10 @@ module rvj1_ifu(
         eIFU_BUSY   // normal operation
     } ifu_fsm_e;
 
+    function automatic logic [3:0] strobe_gen (input ifu_strobe_e strb) ;
+        return (strb == eSTROBE_FULL) ? 4'b1111 : 4'b1100;
+    endfunction
+
     ifu_fsm_e state, state_next;
 
     logic [XLEN-1:0] instr_req_addr_next;

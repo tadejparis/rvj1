@@ -265,7 +265,7 @@ module rvj1_ifu(
 
     fifo_comp fifo (
     .clk_i  (clk_i),
-    .rstn_i (rstn_i),
+    .rstn_i (rstn_i && state_next != eIFU_JMP),
 
     .write_ready_o  (fifo_write_ready),
     .write_valid_i  (fifo_write_valid),

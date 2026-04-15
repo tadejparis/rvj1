@@ -244,6 +244,31 @@ module rvj1_ifu(
         end
     `endif
 
+        /*************************************
+    * FIFO
+    *************************************/
+
+    // placeholders
+    logic fifo_write_ready;
+    logic fifo_write_valid;
+    logic [XLEN-1:0] fifo_write_data;
+    logic fifo_read_ready;
+    logic fifo_read_valid;
+    logic [XLEN-1:0] fifo_read_data;
+    
+    fifo_comp fifo (
+    .clk_i  (clk_i),
+    .rstn_i (rstn_i),
+
+    .write_ready_o (fifo_write_ready),
+    .write_valid_i (fifo_write_valid),
+    .write_data_i  (fifo_write_data),
+
+    .read_ready_i  (fifo_read_ready),
+    .read_valid_o  (fifo_read_valid),
+    .read_data_o   (fifo_read_data)
+    );
+
 
 
     /*************************************

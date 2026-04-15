@@ -116,10 +116,10 @@ module rvj1_ifu(
     logic id_match;
 
     ifu_strobe_e      next_strobe;
-    ifu_strobe_e      dec_strobe;
+    ifu_strobe_e      rsp_strobe;
     logic [IDLEN-1:0] next_id;
     logic [IDLEN-1:0] act_id;
-    logic [IDLEN-1:0] dec_id;
+    logic [IDLEN-1:0] rsp_id;
     logic             dec_fire;
     logic             consume_id;
     logic             consume_rsp;
@@ -214,6 +214,7 @@ module rvj1_ifu(
     /*************************************
     * Response buffering
     *************************************/
+    logic rsp_err;
     skidbuffer #(
         .WORD_WIDTH ($bits(ifu_rsp_t))
     ) rsp_buff (
@@ -226,7 +227,7 @@ module rvj1_ifu(
 
     .output_valid (rsp_buff_out_valid),
     .output_ready (consume_rsp),
-    .output_data  ({dec_strobe, dec_instr_o, dec_error_o, dec_id}),
+    .output_data  ({rsp_strobe, fifo_write_data, rsp_err, rsp_id}),
 
     // verilator lint_off PINCONNECTEMPTY
     .empty        ()
@@ -244,7 +245,7 @@ module rvj1_ifu(
         end
     `endif
 
-        /*************************************
+    /*************************************
     * FIFO
     *************************************/
 
@@ -255,21 +256,28 @@ module rvj1_ifu(
     logic fifo_read_ready;
     logic fifo_read_valid;
     logic [XLEN-1:0] fifo_read_data;
-    
+
+    assign fifo_write_valid = (rsp_buff_out_valid &&
+                          act_id_buff_out_valid &&
+                          (state == eIFU_BUSY) &&
+                          id_match);
+    assign fifo_read_ready = dec_ready_i;
+
     fifo_comp fifo (
     .clk_i  (clk_i),
     .rstn_i (rstn_i),
 
-    .write_ready_o (fifo_write_ready),
-    .write_valid_i (fifo_write_valid),
-    .write_data_i  (fifo_write_data),
+    .write_ready_o  (fifo_write_ready),
+    .write_valid_i  (fifo_write_valid),
+    .write_data_i   (fifo_write_data),
 
-    .read_ready_i  (fifo_read_ready),
-    .read_valid_o  (fifo_read_valid),
-    .read_data_o   (fifo_read_data)
+    .read_ready_i   (fifo_read_ready),
+    .read_valid_o   (fifo_read_valid),
+    .read_data_o    (fifo_read_data),
+
+    .input_err_i    (rsp_err),
+    .output_err_o   (dec_error_o)
     );
-
-
 
     /*************************************
     * Decoder Interface
@@ -277,18 +285,16 @@ module rvj1_ifu(
     assign consume_rsp = (rsp_buff_out_valid &&
                           act_id_buff_out_valid &&
                           (state == eIFU_BUSY) &&
-                          dec_ready_i);
-    assign id_match = (dec_id == act_id);
+                          fifo_write_ready);
+    assign id_match = (rsp_id == act_id);
     assign consume_id = (rsp_buff_out_valid &&
                          act_id_buff_out_valid &&
                          (state == eIFU_BUSY) &&
-                         dec_ready_i &&
+                         fifo_write_ready &&
                          id_match);
-    assign dec_valid_o = (rsp_buff_out_valid &&
-                          act_id_buff_out_valid &&
-                          (state == eIFU_BUSY) &&
-                          id_match);
+    assign dec_valid_o = fifo_read_valid;
     assign dec_fire = dec_ready_i && dec_valid_o;
+    assign dec_instr_o = fifo_read_data;
 
     /*************************************
     * Finite State Machine (FSM)

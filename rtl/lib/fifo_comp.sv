@@ -20,9 +20,13 @@ module fifo_comp #(
 
     input  logic        read_ready_i,
     output logic        read_valid_o,
-    output logic [31:0] read_data_o
+    output logic [31:0] read_data_o,
+
+    input  logic        input_err_i,
+    output logic        output_err_o
 );
-  reg [15:0] mem[DEPTH];
+  logic [15:0] mem[DEPTH];
+  logic        err_mem[DEPTH];
   logic [$clog2(DEPTH)-1:0] read_ptr, write_ptr, read_ptr_next, write_ptr_next;
   logic [$clog2(DEPTH + 1)-1:0] fifo_counter;
 
@@ -69,8 +73,16 @@ module fifo_comp #(
     end
   end
 
+  always_ff @(posedge clk_i) begin
+    if (write_fire) begin
+      err_mem[write_ptr    ] <= input_err_i;
+      err_mem[write_ptr + 1] <= input_err_i;
+    end
+  end
+
   // Output data
   assign read_data_o = {mem[read_ptr + 1], mem[read_ptr]};
+  assign output_err_o = err_mem[read_ptr];
 
   assign read_valid_o = fifo_counter > 1; // FIFO not empty
   assign write_ready_o  = fifo_counter < DEPTH - 1;  // FIFO not full

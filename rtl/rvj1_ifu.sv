@@ -118,7 +118,7 @@ module rvj1_ifu(
     ifu_strobe_e      next_strobe;
     ifu_strobe_e      dec_strobe;
     logic [IDLEN-1:0] next_id;
-    logic [IDLEN-1:0] act_id;
+    logic [IDLEN-1:0] next_exp_id;
     logic [IDLEN-1:0] dec_id;
     logic             dec_fire;
     logic             consume_id;
@@ -181,7 +181,7 @@ module rvj1_ifu(
     );
     skidbuffer #(
         .WORD_WIDTH(IDLEN)
-    ) act_id_buff (
+    ) next_id_buff (
         .clk  (clk_i),
         .rstn (rstn_i && ~jmp_addr_valid_i),
 
@@ -191,7 +191,7 @@ module rvj1_ifu(
 
         .output_valid (act_id_buff_out_valid),
         .output_ready (consume_id),
-        .output_data  (act_id),
+        .output_data  (next_exp_id),
 
         // verilator lint_off PINCONNECTEMPTY
         .empty        ()
@@ -244,30 +244,7 @@ module rvj1_ifu(
         end
     `endif
 
-    /*************************************
-    * FIFO
-    *************************************/
 
-    // placeholders
-    logic fifo_write_ready;
-    logic fifo_write_valid;
-    logic [XLEN-1:0] fifo_write_data;
-    logic fifo_read_ready;
-    logic fifo_read_valid;
-    logic [XLEN-1:0] fifo_read_data;
-
-    fifo_comp fifo (
-    .clk_i  (clk_i),
-    .rstn_i (rstn_i),
-
-    .write_ready_o (fifo_write_ready),
-    .write_valid_i (fifo_write_valid),
-    .write_data_i  (fifo_write_data),
-
-    .read_ready_i  (fifo_read_ready),
-    .read_valid_o  (fifo_read_valid),
-    .read_data_o   (fifo_read_data)
-    );
 
     /*************************************
     * Decoder Interface
@@ -276,7 +253,7 @@ module rvj1_ifu(
                           act_id_buff_out_valid &&
                           (state == eIFU_BUSY) &&
                           dec_ready_i);
-    assign id_match = (dec_id == act_id);
+    assign id_match = (dec_id == next_exp_id);
     assign consume_id = (rsp_buff_out_valid &&
                          act_id_buff_out_valid &&
                          (state == eIFU_BUSY) &&

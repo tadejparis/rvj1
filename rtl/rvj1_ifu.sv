@@ -93,10 +93,6 @@ module rvj1_ifu(
         eIFU_BUSY   // normal operation
     } ifu_fsm_e;
 
-    function automatic logic [3:0] strobe_gen (input ifu_strobe_e strb) ;
-        return (strb == eSTROBE_FULL) ? 4'b1111 : 4'b1100;
-    endfunction
-
     ifu_fsm_e state, state_next;
 
     logic [XLEN-1:0] instr_req_addr_next;
@@ -122,9 +118,11 @@ module rvj1_ifu(
     ifu_strobe_e      next_strobe;
     ifu_strobe_e      dec_strobe;
     logic [IDLEN-1:0] next_id;
-    logic [IDLEN-1:0] exp_id;
+    logic [IDLEN-1:0] next_exp_id;
     logic [IDLEN-1:0] dec_id;
+    logic             dec_fire;
     logic             consume_id;
+    logic             consume_rsp;
 
 
     /*************************************
@@ -183,7 +181,7 @@ module rvj1_ifu(
     );
     skidbuffer #(
         .WORD_WIDTH(IDLEN)
-    ) exp_id_buff (
+    ) next_id_buff (
         .clk  (clk_i),
         .rstn (rstn_i && ~jmp_addr_valid_i),
 
@@ -192,8 +190,8 @@ module rvj1_ifu(
         .input_data   (instr_req_id_o),
 
         .output_valid (act_id_buff_out_valid),
-        .output_ready (dec_valid_o),
-        .output_data  (exp_id),
+        .output_ready (consume_id),
+        .output_data  (next_exp_id),
 
         // verilator lint_off PINCONNECTEMPTY
         .empty        ()
@@ -205,6 +203,10 @@ module rvj1_ifu(
             if (instr_req_fire) begin
                 req_dropped: assert(act_req_buff_inp_ready);
                 id_dropped: assert(act_id_buff_inp_ready);
+            end
+            if (instr_rsp_fire) begin
+                rsp_dropped: assert(act_req_buff_out_valid);
+                rsp_ready: assert(rsp_buff_inp_ready);
             end
         end
     `endif
@@ -223,7 +225,7 @@ module rvj1_ifu(
     .input_data   ({next_strobe, instr_rsp_data_i, instr_rsp_error_i, instr_rsp_id_i}),
 
     .output_valid (rsp_buff_out_valid),
-    .output_ready (consume_id),
+    .output_ready (consume_rsp),
     .output_data  ({dec_strobe, dec_instr_o, dec_error_o, dec_id}),
 
     // verilator lint_off PINCONNECTEMPTY
@@ -236,44 +238,32 @@ module rvj1_ifu(
             if (instr_rsp_valid_i && rsp_buff_inp_ready) begin
                 inorder_ids: assert(instr_rsp_id_i == next_id);
             end
+            if (consume_id) begin
+                valid_consume: assert(rsp_buff_out_valid && act_id_buff_out_valid);
+            end
         end
     `endif
 
-    assign consume_id = (rsp_buff_out_valid &&
-                         act_id_buff_out_valid &&
-                         (state == eIFU_BUSY) &&
-                         dec_ready_i);
 
-    /*************************************
-    * FIFO
-    *************************************/
-
-    // placeholders
-    logic fifo_write_ready;
-    logic fifo_write_valid;
-    logic fifo_write_data;
-    logic fifo_read_ready;
-    logic fifo_read_valid;
-    logic fifo_read_data;
-
-    fifo_comp fifo (
-    .clk_i  (clk_i),
-    .rstn_i (rstn_i),
-
-    .write_ready_o (fifo_write_ready),
-    .write_valid_i (fifo_write_valid),
-    .write_data_i  (fifo_write_data),
-
-    .read_ready_i  (fifo_read_ready),
-    .read_valid_o  (fifo_read_valid),
-    .read_data_o   (fifo_read_data)
-    );
 
     /*************************************
     * Decoder Interface
     *************************************/
-    assign id_match = (dec_id == exp_id);
-    assign dec_valid_o = consume_id && id_match;
+    assign consume_rsp = (rsp_buff_out_valid &&
+                          act_id_buff_out_valid &&
+                          (state == eIFU_BUSY) &&
+                          dec_ready_i);
+    assign id_match = (dec_id == next_exp_id);
+    assign consume_id = (rsp_buff_out_valid &&
+                         act_id_buff_out_valid &&
+                         (state == eIFU_BUSY) &&
+                         dec_ready_i &&
+                         id_match);
+    assign dec_valid_o = (rsp_buff_out_valid &&
+                          act_id_buff_out_valid &&
+                          (state == eIFU_BUSY) &&
+                          id_match);
+    assign dec_fire = dec_ready_i && dec_valid_o;
 
     /*************************************
     * Finite State Machine (FSM)

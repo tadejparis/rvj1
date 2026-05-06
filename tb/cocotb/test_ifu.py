@@ -14,6 +14,110 @@ import os
 from base import WAVES, RVFI, RVFI_TRACE, ASSERTIONS
 from cocotb_tools.runner import get_runner
 
+from riscvmodel.insn import *
+from riscvmodel.variant import RV32I
+from riscvmodel.regnames import x0, x1, x2, a0
+
+from test_ifu_rvc import InstructionCADDIManual
+
+def create_program() -> list:
+    instructions = [
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
+        #InstructionADDI(rd=a0, rs1=x0, imm=50).encode(),
+        #InstructionADDI(rd=a0, rs1=x0, imm=42).encode()
+        InstructionCADDIManual(rd=a0, imm = 6),
+        InstructionCADDIManual(rd=a0, imm = 5)
+    ]
+    return instructions
+
+def write_hex(instructions: list, path: str, base_addr: int = 0):
+    with open(path, "w") as f:
+        ostanek = -1;
+        for insn in instructions:
+            left  = (insn >> 16) & 0xFFFF
+            right = insn & 0xFFFF
+            
+            if (insn & 0b11 == 0b11 and ostanek == -1):
+                f.write(f"{left:04X}")
+                f.write(f"{right:04X}\n")
+                ostanek = -1
+            elif insn & 0b11 == 0b11:
+                f.write(f"{right:04X}") # levi del vrstice
+                f.write(f"{ostanek:04X}\n") # desni del vrstice
+                ostanek = left
+            elif insn & 0b11 != 0b11 and ostanek == -1:
+                ostanek = insn  
+            else:
+                f.write(f"{insn:04X}") # levi del vrstice
+                f.write(f"{ostanek:04X}\n") # desni del vrstice
+                ostanek = -1
+                
+
+instructions = create_program()
+write_hex(instructions, "test.hex")
+
+
 class IfuTB(BaseBench):
     def __init__(self, dut):
         super().__init__(dut, clk=dut.clk_i, rst=dut.rstn_i, rst_active_high=False)
@@ -42,7 +146,7 @@ class IfuTB(BaseBench):
         error = (target_addr > outofbounds)
         self.scoreboard.channels["dec_mon"].push_reference(
             InstrAddrResponse(
-                instr=0 if error else self.counter, 
+                instr=0 if error else instructions[self.counter-1], 
                 error=error
             )
         )
@@ -116,7 +220,7 @@ async def linear_run(tb: IfuTB, log):
     tb.schedule(dec_backpressure_seq(dec=tb.dec_resp_drv), blocking=False)
     log.info("Using the jump interface to set the IFU (boot) address.")
     tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0000))
-    await ClockCycles(tb.clk, 100)
+    await ClockCycles(tb.clk, 300)
 
 @IfuTB.testcase(
     reset_wait_during=2,
@@ -176,6 +280,6 @@ if __name__ == "__main__":
     runner.test(
         hdl_toplevel="ifu_mem_test_top", 
         test_module="test_ifu",
-        plusargs=["+MEM_INIT_FILE0=/foss/designs/rvj1/tb/cocotb/ifu_test_mem.hex"]
+        plusargs=["+MEM_INIT_FILE0=/foss/designs/rvj1/tb/cocotb/test.hex"]
     )
   

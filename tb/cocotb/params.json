@@ -1,0 +1,7 @@
+{
+    "verbosity": {
+        "tb": "info",
+        "tb.scoreboard": "debug",
+        "tb.scoreboard.channel.dec_mon": "debug"
+    }
+}

@@ -26,8 +26,9 @@ module fifo_comp #(
     output logic        output_err_o
 );
   logic [15:0] mem[DEPTH];
-  logic        err_mem[DEPTH];
+  logic        err_mem[DEPTH]; // TODO a moram čisto pobrisati ob reset?
   logic [$clog2(DEPTH)-1:0] read_ptr, write_ptr, read_ptr_next, write_ptr_next;
+  logic [$clog2(DEPTH)-1:0] err_read_ptr, err_write_ptr, err_read_ptr_next, err_write_ptr_next;
   logic [$clog2(DEPTH + 1)-1:0] fifo_counter;
 
   logic write_fire, read_fire;
@@ -35,24 +36,36 @@ module fifo_comp #(
   assign read_fire = read_ready_i && read_valid_o;
 
   // Next pointer
-  assign read_ptr_next = read_ptr + 2;
+  always_comb begin
+    if (mem[read_ptr][1:0] == 2'b11) begin
+      read_ptr_next = read_ptr + 2;
+    end else begin
+      read_ptr_next = read_ptr + 1;
+    end
+  end
   assign write_ptr_next = write_ptr + 2;
+  assign err_read_ptr_next = err_read_ptr + 2;
+  assign err_write_ptr_next = err_write_ptr + 2;
   
   // WRITE POINTER
-  // Handling writing is easier since it is always 32 bits
   always_ff @(posedge clk_i) begin
-    if (~rstn_i)
+    if (~rstn_i) begin
       write_ptr <= '0;
-    else if (write_fire)
+    end
+    else if (write_fire) begin
       write_ptr <= write_ptr_next;
+      err_write_ptr <= err_write_ptr_next;
+    end
   end
 
   // READ POINTER
   always_ff @(posedge clk_i) begin
-    if (~rstn_i)
+    if (~rstn_i) begin
       read_ptr <= '0;
-    else if (read_fire)
+    end else if (read_fire) begin
       read_ptr <= read_ptr_next;
+      err_read_ptr <= err_read_ptr_next;
+    end
   end
 
   // Parcel counter
@@ -62,7 +75,11 @@ module fifo_comp #(
     else if (write_fire && ~read_fire) // push / write
       fifo_counter <= fifo_counter + 2;
     else if (~write_fire && read_fire) // pop / read
-      fifo_counter <= fifo_counter - 2;
+      if (mem[read_ptr][1:0] == 2'b11) begin
+        fifo_counter <= fifo_counter - 2;
+      end else begin
+        fifo_counter <= fifo_counter - 1;
+      end
   end
 
   // Input data
@@ -75,15 +92,30 @@ module fifo_comp #(
 
   always_ff @(posedge clk_i) begin
     if (write_fire) begin
-      err_mem[write_ptr    ] <= input_err_i;
-      err_mem[write_ptr + 1] <= input_err_i;
+      err_mem[err_write_ptr    ] <= input_err_i;
+      err_mem[err_write_ptr + 1] <= input_err_i;
     end
   end
 
   // Output data
-  assign read_data_o = {mem[read_ptr + 1], mem[read_ptr]};
-  assign output_err_o = err_mem[read_ptr];
+  always_comb begin
+    if (mem[read_ptr][1:0] == 2'b11) begin
+      read_data_o = {mem[read_ptr + 1], mem[read_ptr]};
+    end else begin
+      read_data_o = {16'b0, mem[read_ptr]};
+    end
+  end
+  assign output_err_o = err_mem[err_read_ptr];
 
-  assign read_valid_o = fifo_counter > 1; // FIFO not empty
-  assign write_ready_o  = fifo_counter < DEPTH - 1;  // FIFO not full
+  // Full/empty
+  always_comb begin
+    if (mem[read_ptr][1:0] == 2'b11) begin
+      read_valid_o = fifo_counter >= 2;
+      // read_valid_o = fifo_counter >= 2 && ~err_mem[err_read_ptr];
+    end else begin
+      read_valid_o = fifo_counter >= 1;
+      // read_valid_o = fifo_counter >= 1 && ~err_mem[err_read_ptr];
+    end
+  end
+  assign write_ready_o  = fifo_counter < DEPTH - 1;  // FIFO not full - TODO 16
 endmodule

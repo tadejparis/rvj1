@@ -57,7 +57,7 @@ class CADDI4SPNTest(Program):
         return {x1: 12}
 
 
-RVC_INSTRUCTIONS = {
+RV32IC_TESTS = {
     "caddi4spn": InstructionCADDI4SPN,
     "clw":       InstructionCLW,
     "csw":       InstructionCSW,

@@ -279,11 +279,11 @@ module rvj1_ifu(
     .output_err_o   (dec_error_o)
     );
 
-    // logic [XLEN-1:0] instr_o; 
-    // rvc_decomp decomp (
-    //     .instr_i    (fifo_read_data),
-    //     .instr_o    (instr_o)
-    // );
+    logic [XLEN-1:0] instr_o; 
+    rvc_decomp decomp (
+        .instr_i    (fifo_read_data),
+        .instr_o    (instr_o)
+    );
 
     /*************************************
     * Decoder Interface
@@ -300,8 +300,8 @@ module rvj1_ifu(
                          id_match);
     assign dec_valid_o = fifo_read_valid;
     assign dec_fire = dec_ready_i && dec_valid_o;
-    // assign dec_instr_o = instr_o;
-    assign dec_instr_o = fifo_read_data;
+    assign dec_instr_o = instr_o;
+    // assign dec_instr_o = fifo_read_data;
 
     /*************************************
     * Finite State Machine (FSM)

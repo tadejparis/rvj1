@@ -22,71 +22,73 @@ from test_ifu_rvc import InstructionCADDIManual
 
 def create_program() -> list:
     instructions = [
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        InstructionADDI(rd=a0, rs1=x0, imm=42).encode(),
-        #InstructionADDI(rd=a0, rs1=x0, imm=50).encode(),
-        #InstructionADDI(rd=a0, rs1=x0, imm=42).encode()
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        InstructionADDI(rd=a0, rs1=x0, imm=42),
+        #InstructionADDI(rd=a0, rs1=x0, imm=50),
+        #InstructionADDI(rd=a0, rs1=x0, imm=42)
         InstructionCADDIManual(rd=a0, imm = 6),
+        InstructionCADDIManual(rd=a0, imm = 6),
+        InstructionCADDIManual(rd=a0, imm = 5),
         InstructionCADDIManual(rd=a0, imm = 5)
     ]
     return instructions
@@ -95,21 +97,22 @@ def write_hex(instructions: list, path: str, base_addr: int = 0):
     with open(path, "w") as f:
         ostanek = -1;
         for insn in instructions:
-            left  = (insn >> 16) & 0xFFFF
-            right = insn & 0xFFFF
+            encoded = insn.encode()
+            left  = (encoded >> 16) & 0xFFFF
+            right = encoded & 0xFFFF
             
-            if (insn & 0b11 == 0b11 and ostanek == -1):
+            if (encoded & 0b11 == 0b11 and ostanek == -1):
                 f.write(f"{left:04X}")
                 f.write(f"{right:04X}\n")
                 ostanek = -1
-            elif insn & 0b11 == 0b11:
+            elif encoded & 0b11 == 0b11:
                 f.write(f"{right:04X}") # levi del vrstice
                 f.write(f"{ostanek:04X}\n") # desni del vrstice
                 ostanek = left
-            elif insn & 0b11 != 0b11 and ostanek == -1:
-                ostanek = insn  
+            elif encoded & 0b11 != 0b11 and ostanek == -1:
+                ostanek = encoded  
             else:
-                f.write(f"{insn:04X}") # levi del vrstice
+                f.write(f"{encoded:04X}") # levi del vrstice
                 f.write(f"{ostanek:04X}\n") # desni del vrstice
                 ostanek = -1
                 

@@ -1,5 +1,5 @@
 from riscvmodel.insn import InstructionADDI
-from test_ifu_rvc import InstructionCADDIManual
+from test_ifu_rvc import *
 
 from riscvmodel.regnames import x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x28, x29, x30, x31
 from riscvmodel.csrnames import misa, mscratch, mtvec, mepc, mcause, mstatus, mtval
@@ -31,6 +31,20 @@ def flatten_list(items, ignore_types=(bytes, str)):
 
 class CADDITest(Program):
     """Basic test of C.ADDI instruction"""
+
+    def __init__(self):
+        insns = [
+            InstructionCADDIManual(x1, 2),
+            InstructionCADDIManual(x1, 8),
+            InstructionCADDIManual(x2, 5)
+        ]
+        super().__init__(insns)
+    
+    def expects(self) -> dict:
+        return {x1: 10, x2: 5}
+
+class CADDITest(Program):
+    """Basic test of C.ADDI4SPN instruction"""
 
     def __init__(self):
         insns = [

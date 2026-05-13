@@ -18,7 +18,7 @@ from riscvmodel.insn import *
 from riscvmodel.variant import RV32I
 from riscvmodel.regnames import x0, x1, x2, a0
 
-from test_ifu_rvc import InstructionCADDIManual
+from test_ifu_rvc import *
 
 def create_program() -> list:
     instructions = [
@@ -86,10 +86,10 @@ def create_program() -> list:
         InstructionADDI(rd=a0, rs1=x0, imm=42),
         #InstructionADDI(rd=a0, rs1=x0, imm=50),
         #InstructionADDI(rd=a0, rs1=x0, imm=42)
-        InstructionCADDIManual(rd=a0, imm = 6),
-        InstructionCADDIManual(rd=a0, imm = 6),
-        InstructionCADDIManual(rd=a0, imm = 5),
-        InstructionCADDIManual(rd=a0, imm = 5)
+        InstructionCADDI(rd=a0, imm = 6),
+        InstructionCADDI(rd=a0, imm = 6),
+        InstructionCADDI(rd=a0, imm = 5),
+        InstructionCADDI(rd=a0, imm = 5)
     ]
     return instructions
 

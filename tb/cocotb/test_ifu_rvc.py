@@ -12,6 +12,10 @@ class RVCMetaInstruction(Instruction):
     def execute(self, model):
         pass
 
+def _reg3(r: int) -> int:
+    """Extract the 3-bit compressed register field (assumes r in 8..15)."""
+    return r & 0x7
+
 def InstructionCADDI4SPN(rd_prime: int, nzuimm: int) -> RVCMetaInstruction:
     op = 0b00
     funct3 = 0b000

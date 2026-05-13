@@ -59,7 +59,6 @@ class CADDI4SPNTest(Program):
 
 RVC_INSTRUCTIONS = {
     "caddi4spn": InstructionCADDI4SPN,
-    "cfld":      InstructionCFLD,
     "clw":       InstructionCLW,
     "csw":       InstructionCSW,
     "caddi":     InstructionCADDI,

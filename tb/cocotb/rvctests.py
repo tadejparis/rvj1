@@ -34,54 +34,53 @@ class CADDITest(Program):
 
     def __init__(self):
         insns = [
-            InstructionCADDIManual(x1, 2),
-            InstructionCADDIManual(x1, 8),
-            InstructionCADDIManual(x2, 5)
+            InstructionCADDI(x1, 2),
+            InstructionCADDI(x1, 8),
+            InstructionCADDI(x2, 5)
         ]
         super().__init__(insns)
     
     def expects(self) -> dict:
         return {x1: 10, x2: 5}
 
-class CADDITest(Program):
+class CADDI4SPNTest(Program):
     """Basic test of C.ADDI4SPN instruction"""
 
     def __init__(self):
         insns = [
-            InstructionCADDIManual(x1, 2),
-            InstructionCADDIManual(x1, 8),
-            InstructionCADDIManual(x2, 5)
+            InstructionCADDI4SPN(x1, 2),
+            InstructionCADDI4SPN(x1, 1),
         ]
         super().__init__(insns)
     
     def expects(self) -> dict:
-        return {x1: 10, x2: 5}
+        return {x1: 12}
 
 
 RVC_INSTRUCTIONS = {
-    "CDDI4SPN": InstructionCADDI4SPN,
-    "CFLD":      InstructionCFLD,
-    "CLW":       InstructionCLW,
-    "CSW":       InstructionCSW,
-    "CADDI":     InstructionCADDI,
-    "CJAL":      InstructionCJAL,   
-    "CLI":       InstructionCLI,
-    "CADDI16SP": InstructionCADDI16SP,
-    "CLUI":      InstructionCLUI,
-    "CSRLI":     InstructionCSRLI,
-    "CSRAI":     InstructionCSRAI,
-    "CANDI":     InstructionCANDI,
-    "CSUB":      InstructionCSUB,
-    "CXOR":      InstructionCXOR,
-    "COR":       InstructionCOR,
-    "CAND":      InstructionCAND,
-    "CJ":        InstructionCJ,
-    "CSLLI":     InstructionCSLLI,
-    "CLWSP":     InstructionCLWSP,
-    "CJR":       InstructionCJR,
-    "CMV":       InstructionCMV,
-    "CEBREAK":   InstructionCEBREAK,
-    "CJALR":     InstructionCJALR,
-    "CADD":      InstructionCADD,
-    "CSWSP":     InstructionCSWSP,
+    "caddi4spn": InstructionCADDI4SPN,
+    "cfld":      InstructionCFLD,
+    "clw":       InstructionCLW,
+    "csw":       InstructionCSW,
+    "caddi":     InstructionCADDI,
+    "cjal":      InstructionCJAL,   
+    "cli":       InstructionCLI,
+    "caddi16sp": InstructionCADDI16SP,
+    "clui":      InstructionCLUI,
+    "csrli":     InstructionCSRLI,
+    "csrai":     InstructionCSRAI,
+    "candi":     InstructionCANDI,
+    "csub":      InstructionCSUB,
+    "cxor":      InstructionCXOR,
+    "cor":       InstructionCOR,
+    "cand":      InstructionCAND,
+    "cj":        InstructionCJ,
+    "cslli":     InstructionCSLLI,
+    "clwsp":     InstructionCLWSP,
+    "cjr":       InstructionCJR,
+    "cmv":       InstructionCMV,
+    "cebreak":   InstructionCEBREAK,
+    "cjalr":     InstructionCJALR,
+    "cadd":      InstructionCADD,
+    "cswsp":     InstructionCSWSP,
 }

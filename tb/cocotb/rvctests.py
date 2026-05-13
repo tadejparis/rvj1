@@ -44,6 +44,30 @@ class CADDITest(Program):
         return {x1: 10, x2: 5}
 
 
-RV32IC_TESTS = {
-    "caddi" : CADDITest(),
+RVC_INSTRUCTIONS = {
+    "CDDI4SPN": InstructionCADDI4SPN,
+    "CFLD":      InstructionCFLD,
+    "CLW":       InstructionCLW,
+    "CSW":       InstructionCSW,
+    "CADDI":     InstructionCADDI,
+    "CJAL":      InstructionCJAL,   
+    "CLI":       InstructionCLI,
+    "CADDI16SP": InstructionCADDI16SP,
+    "CLUI":      InstructionCLUI,
+    "CSRLI":     InstructionCSRLI,
+    "CSRAI":     InstructionCSRAI,
+    "CANDI":     InstructionCANDI,
+    "CSUB":      InstructionCSUB,
+    "CXOR":      InstructionCXOR,
+    "COR":       InstructionCOR,
+    "CAND":      InstructionCAND,
+    "CJ":        InstructionCJ,
+    "CSLLI":     InstructionCSLLI,
+    "CLWSP":     InstructionCLWSP,
+    "CJR":       InstructionCJR,
+    "CMV":       InstructionCMV,
+    "CEBREAK":   InstructionCEBREAK,
+    "CJALR":     InstructionCJALR,
+    "CADD":      InstructionCADD,
+    "CSWSP":     InstructionCSWSP,
 }

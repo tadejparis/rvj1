@@ -80,16 +80,37 @@ class CSWLWTest(Program):
             }
 
 class CJALTest(Program):
-    """Basic test of C.ADDI4SPN instruction"""
+    """Basic test of C.JAL instruction"""
 
     def __init__(self):
         insns = [
-            InstructionCADDI4SPN(x2, 8),
+            InstructionADDI(x0, x0, 1),  # 0x8000_0000
+            InstructionADDI(x2, x0, 2),  # 0x8000_0004
+            InstructionADDI(x3, x0, 3),  # 0x8000_0008
+            InstructionCJAL(0x8),        # 0x8000_000c ->
+            InstructionCADDI(x11, 11),   # 0x8000_000e   |
+            InstructionADDI(x4, x0, 4),  # 0x8000_0010   |
+            InstructionADDI(x5, x0, 5),  # 0x8000_0014 <-
+            InstructionADDI(x6, x0, 6),  # 0x8000_0018
+            InstructionADDI(x7, x0, 7),
+            InstructionADDI(x8, x0, 8),
+            InstructionADDI(x9, x0, 9),
+            InstructionADDI(x31, x0, 1)
         ]
         super().__init__(insns)
     
     def expects(self) -> dict:
-        return {x2: 8}
+        return {            
+            0: 0,
+            1: 0x80000010,
+            2: 2,
+            3: 3,
+            4: 0,
+            5: 5,
+            6: 6,
+            7: 7,
+            8: 8,
+            9: 9,}
 
 
 
@@ -97,4 +118,5 @@ RV32IC_TESTS = {
     "caddi":     CADDITest(),
     "caddi4spn": CADDI4SPNTest(),
     "cswlw":       CSWLWTest(),
+    "cjal":      CJALTest()
 }

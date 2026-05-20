@@ -112,11 +112,26 @@ class CJALTest(Program):
             8: 8,
             9: 9,}
 
+class CLITest(Program):
+    """Basic test of C.LI instruction"""
+
+    def __init__(self):
+        insns = [
+            InstructionCLI(x2, 4),
+            InstructionCLI(x3, 5)
+        ]
+        super().__init__(insns)
+    def expects(self) -> dict:
+        return {            
+            2: 4,
+            3: 5,
+        }
 
 
 RV32IC_TESTS = {
     "caddi":     CADDITest(),
     "caddi4spn": CADDI4SPNTest(),
     "cswlw":       CSWLWTest(),
-    "cjal":      CJALTest()
+    "cjal":      CJALTest(),
+    "cli":       CLITest()
 }

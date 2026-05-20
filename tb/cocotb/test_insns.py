@@ -13,6 +13,8 @@ import cocotb
 from cocotb.triggers import ValueChange, ClockCycles, RisingEdge
 from cocotb_tools.runner import get_runner
 from cocotb.clock import Clock
+from functools import reduce
+import numpy as np
 
 TIMEOUT_CLOCKS = 1000
 
@@ -106,9 +108,19 @@ def test_simple_runner(top_test_fixture, asm_test_name):
 
 
 def gen_hex(program: Program) -> str:
+    insns = []
+    for item in program.insns:
+        if isinstance(item, list):
+            insns.extend(item)
+        else:
+            insns.append(item)
+    insn_bytes_list = list(map(insn2bytes, insns))
+    insn_bytes = list(reduce(lambda x, y : x + y, insn_bytes_list, []))
+    words = np.array(insn_bytes).reshape((-1, 4))
+    words = np.flip(words, axis=1).tolist()
     hex_str = ""
-    for insn in program.insns:
-        hex_str += format(insn.encode(), '08X') + "\n"
+    for word in words:
+        hex_str += reduce(lambda x,y : x + y, word) + '\n'
     return bytes(hex_str, 'utf-8')
 
 def get_expected_results(program: Program) -> dict:
@@ -123,3 +135,10 @@ def get_expected_results(program: Program) -> dict:
             expects[regnum] = regval
     return expects
 
+def insn2bytes(insn):
+    if insn.encode() & 0b11 == 0b11:
+        insn_str = format(insn.encode(), '08X')
+        return [insn_str[6:8], insn_str[4:6], insn_str[2:4], insn_str[0:2]]
+    else:
+        insn_str = format(insn.encode(), '04X')
+        return [insn_str[2:4], insn_str[0:2]]

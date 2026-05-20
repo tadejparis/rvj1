@@ -1377,6 +1377,6 @@ RV32I_TESTS = {
     "mstatus": MSTATUSTest(),
     "misaligned-lw": MISALIGNEDLWTest(),
     "misaligned-jal": MISALIGNEDJALTest(),
-    "csr-write-fault": CSRWriteFaultTest(),
+    "32-csr-write-fault": CSRWriteFaultTest(),
     "precise-insn-acc-fault": InsnAccFaultPreciseTest(),
 }

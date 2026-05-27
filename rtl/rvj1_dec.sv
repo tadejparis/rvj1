@@ -23,6 +23,7 @@ module rvj1_dec
   input  logic            ifu_valid_i,
   output logic            ifu_ready_o,       // Ready for instructions.
   input  logic            ifu_error_i,       // Fetch error
+  input  logic            ifu_compr_i, 
 
   input  logic            stall_i,
   output logic            instr_issued_o,
@@ -30,6 +31,7 @@ module rvj1_dec
   output logic            control_o, // signals that controls signals have been activated
   output logic            illegal_instr_o,
   output logic            fetch_error_o,
+  output logic            compr_o, // this was a compressed instruction
 
   `ifdef RVFI
   output logic [XLEN-1:0] instr_exec_o, // the word of the instruction currently being executed
@@ -374,6 +376,7 @@ always_ff @(posedge clk_i) begin
     illegal_instr_o     <= illegal_instr;
     ebreak_insn_o       <= ebreak_insn;
     fetch_error_o       <= ifu_error_i;
+    compr_o             <= ifu_compr_i;
   end
 end
 

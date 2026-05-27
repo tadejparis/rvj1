@@ -66,9 +66,10 @@ module rvj1_ifu(
   output logic            dec_valid_o,
   input  logic            dec_ready_i,  // Decoder ready to accept new instruction (stall)
   output logic            dec_error_o,  // signal a instruction fetch error on next insn
+  output logic            dec_compressed_o, // was compressed?
 
   input logic             jmp_addr_valid_i, // change PC to jmp_addr_i
-  input logic [XLEN-3:0]  jmp_addr_i        // The jump address
+  input logic [XLEN-1:0]  jmp_addr_i        // The jump address
 );
     typedef enum logic {
         eSTROBE_FULL  = 1'b0,  // strobe == 1111
@@ -135,7 +136,7 @@ module rvj1_ifu(
     assign instr_req_addr_next = (jmp_addr_valid_i) ? {jmp_addr_i, 2'b00} : (instr_req_addr_o + 4);
     register #(
         .WORD_WIDTH(XLEN),
-        .RESET_VALUE('0)
+        .RESET_VALUE(BOOT_ADDR)
     ) instr_req_addr_reg (
         .clk  (clk_i),
         .rstn (rstn_i),
@@ -282,7 +283,10 @@ module rvj1_ifu(
     logic [XLEN-1:0] instr_o; 
     rvc_decomp decomp (
         .instr_i    (fifo_read_data),
-        .instr_o    (instr_o)
+        .instr_o    (instr_o),
+
+        .compr_o   (dec_compressed_o)
+
     );
 
     /*************************************

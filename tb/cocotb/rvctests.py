@@ -136,11 +136,11 @@ class CJALTest2(Program):
     def expects(self) -> dict:
         return {
             0: 0,
-            1: 0x80000014,
+            1: 0x8000000e,
             2: 2,
             3: 3,
             4: 0,
-            5: 0,
+            5: 5,
             6: 6,
             7: 7,
             8: 8,

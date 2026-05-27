@@ -6,15 +6,18 @@ import rvj1_defines::*;
 
 module rvc_decomp (
     input  logic [31:0]     instr_i,
-    output logic [31:0]     instr_o
+    output logic [31:0]     instr_o,
+
+    output logic            compr_o
     );
 
   always_comb begin
-
+    compr_o = 1'b1;
     unique case (instr_i[1:0])
       // uncompressed
       2'b11: begin
         instr_o = instr_i;
+        compr_o = 1'b0;
       end
       // C0 kvadrant
       2'b00: begin

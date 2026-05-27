@@ -73,6 +73,7 @@ module rvj1_top
   logic [XLEN-1:0]  fetched_instr;
   logic             fetched_instr_ready;
   logic             fetched_instr_error;
+  logic             fetched_compr;
 
   // DEC/EX
   logic             control;
@@ -132,7 +133,7 @@ module rvj1_top
   // CONTROL SIGNALS
   logic             instr_retiring;
   logic             jmp_addr_valid;
-  logic [XLEN-3:0]  jmp_addr;
+  logic [XLEN-2:0]  jmp_addr;
   logic             lsu_ready;
   logic             flush_ex;
   logic             flush_mem_wb;
@@ -141,6 +142,7 @@ module rvj1_top
   logic [RALEN-1:0] csr_regdest;
   logic             stop_jmp_write;
   logic             illegal_instr;
+  logic             compr;
 
   `ifdef RVFI
   rvfi_csr_t        rvfi_csr_rdata;
@@ -183,6 +185,7 @@ module rvj1_top
     .dec_valid_o        (fetched_instr_valid),
     .dec_ready_i        (fetched_instr_ready),
     .dec_error_o        (fetched_instr_error),
+    .dec_compressed_o   (fetched_compr),
 
     .jmp_addr_valid_i   (jmp_addr_valid),
     .jmp_addr_i         (jmp_addr)
@@ -199,12 +202,14 @@ module rvj1_top
     .ifu_valid_i         (fetched_instr_valid),
     .ifu_ready_o         (fetched_instr_ready),
     .ifu_error_i         (fetched_instr_error),
+    .ifu_compr_i         (fetched_compr),
     .stall_i             (stall_ex),
     .instr_issued_o      (instr_issued),
     .instr_will_retire_o (instr_will_retire),
     .control_o           (control),
     .illegal_instr_o     (illegal_instr),
     .fetch_error_o       (fetch_error),
+    .compr_o             (compr),
     `ifdef RVFI
     .instr_exec_o        (instr_exec),
     `endif
@@ -390,6 +395,7 @@ module rvj1_top
     .mret_insn_i            (mret_insn),
     .ebreak_insn_i          (ebreak_insn),
     .illegal_instr_i        (illegal_instr),
+    .compr_i                (compr),
     .load_addr_misaligned_i (load_addr_misaligned),
     .load_access_fault_i    (load_access_fault),
     .store_addr_misaligned_i(store_addr_misaligned),

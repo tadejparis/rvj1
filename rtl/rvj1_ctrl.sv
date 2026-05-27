@@ -36,6 +36,7 @@ module rvj1_ctrl
   input  logic             mret_insn_i,
   input  logic             ebreak_insn_i,
   input  logic             illegal_instr_i,
+  input  logic             compr_i,
 
   input  logic             control_i,
   input  logic             instr_fetch_error_i,
@@ -68,7 +69,7 @@ module rvj1_ctrl
   output logic [XLEN-1:0]  program_counter_o,
 
   output logic             jmp_addr_valid_o,
-  output logic [XLEN-3:0]  jmp_addr_o,
+  output logic [XLEN-2:0]  jmp_addr_o,
 
   input  logic             irq_external_i,
   input  logic             irq_timer_i,
@@ -115,8 +116,8 @@ module rvj1_ctrl
   miep_reg_t       mie_d, mie_q;
   miep_reg_t       mip_d, mip_q;
   assign mie_q = '0; // TODO
-  logic [XLEN-3:0] mtvec_d, mtvec_q; // only direct mode supported
-  logic [XLEN-3:0] mepc_d, mepc_q;
+  logic [XLEN-2:0] mtvec_d, mtvec_q; // only direct mode supported
+  logic [XLEN-2:0] mepc_d, mepc_q;
   logic [5:0]      mcause_d, mcause_q, trap_cause, trap_cause_r; // 1 bit for IRQ/EXC, 5 bits-code=>log2(19)=4.24
   logic [XLEN-1:0] mtval_d, mtval_q;
   logic [XLEN-1:0] mscratch_d, mscratch_q;
@@ -152,7 +153,7 @@ module rvj1_ctrl
   logic synhr_trap_mem_wb, synhr_trap_mem_wb2;
   logic instr_will_retire, instr_will_retire_r;
   logic pc_change;
-  logic [XLEN-3:0] program_counter, program_counter_prev, program_counter_next;
+  logic [XLEN-2:0] program_counter, program_counter_prev, program_counter_next;
   logic instr_addr_misaligned;
   logic ecall_insn;
   logic ebreak_insn, ebreak_insn_r;
@@ -238,13 +239,13 @@ module rvj1_ctrl
   always_comb begin
     jmp_addr_o = '0;
     if (state == eJUMP0)
-      jmp_addr_o = alu_res_r_i[31:2];
+      jmp_addr_o = alu_res_r_i[31:1];
     else if (state == eTRAP)
-      jmp_addr_o = csr_mtvec_value[31:2];
+      jmp_addr_o = csr_mtvec_value[31:1];
     else if (state == eMRET)
-      jmp_addr_o = csr_mepc_value[31:2];
-    else
-      jmp_addr_o = BOOT_ADDR[31:2];
+      jmp_addr_o = csr_mepc_value[31:1];
+    else if (state == eBOOT0)
+      jmp_addr_o = BOOT_ADDR[31:1];
   end
 
   /*************************************
@@ -259,17 +260,18 @@ module rvj1_ctrl
   always_comb begin
     program_counter_next = program_counter;
     if (synhr_trap)
-      program_counter_next = csr_mtvec_value[31:2];
+      program_counter_next = csr_mtvec_value[31:1];
     else if (mret)
-      program_counter_next = csr_mepc_value[31:2];
+      program_counter_next = csr_mepc_value[31:1];
     else if (state == eJUMP0)
-      program_counter_next = alu_res_r_i[31:2];
+      program_counter_next = alu_res_r_i[31:1];
     else if (instr_will_retire || ctrl_jump || loaded)
-      program_counter_next = program_counter + 1;  // ctrl_jump - gives us pc + 4 on JAL & JALR
+      program_counter_next = compr_i ? program_counter + 1: program_counter + 2;  // ctrl_jump - gives us pc + 4 on JAL & JALR
+      // doesn't work for load instructions. TODO
   end
   register #(
-    .WORD_WIDTH(XLEN-2),
-    .RESET_VALUE(BOOT_ADDR[31:2])
+    .WORD_WIDTH(XLEN-1),
+    .RESET_VALUE(BOOT_ADDR[31:1])
   ) program_counter_reg (
     .clk  (clk_i),
     .rstn (rstn_i),
@@ -277,13 +279,13 @@ module rvj1_ctrl
     .in   (program_counter_next),
     .out  (program_counter)
   );
-  assign program_counter_o = {program_counter, 2'b00};
+  assign program_counter_o = {program_counter, 1'b0};
   // TODO: Is there anyway to get rid of this extra state?
   // This is here because we need mepc on write misalign trap
   // Tega se znebimo tak da vse izjeme obravnavamo v istem delu cevovoda
   register #(
-    .WORD_WIDTH(XLEN-2),
-    .RESET_VALUE(BOOT_ADDR[31:2])
+    .WORD_WIDTH(XLEN-1),
+    .RESET_VALUE(BOOT_ADDR[31:1])
   ) program_counter_prev_reg (
     .clk  (clk_i),
     .rstn (rstn_i),
@@ -434,8 +436,8 @@ module rvj1_ctrl
     | ({16'b0, mip_q.irqs}  << CSR_MIEP_PLATFORM_IRQS_BIT)
     | 32'b0
   );
-  assign csr_mepc_value     = {mepc_q, 2'b00}; // IALIGN=32
-  assign csr_mtvec_value    = {mtvec_q, 2'b00}; // direct mode only! (no vector irqs)
+  assign csr_mepc_value     = {mepc_q, 1'b0}; // IALIGN=16
+  assign csr_mtvec_value    = {mtvec_q, 1'b0}; // direct mode only! (no vector irqs)
   assign csr_mcause_value   = {mcause_q[5], 26'b0, mcause_q[4:0]};
   assign csr_mtval_value    = mtval_q;
   assign csr_mscratch_value = mscratch_q;
@@ -529,7 +531,7 @@ module rvj1_ctrl
       else if (addr_unaligned_trap || instr_addr_misaligned)
         mtval_d = alu_res_r_i;
       else if (ebreak_insn_r)
-        mtval_d = {program_counter_prev, 2'b00};
+        mtval_d = {program_counter_prev, 1'b0};
       else
         mtval_d = '0;
       mtval_ce = 1'b1;
@@ -555,12 +557,12 @@ module rvj1_ctrl
         end
         CSR_MTVEC_ADDR: begin
           csr_mtvec_masked = csr_mask_op(alu_res_r_i, csr_mtvec_value, csr_cmd_r_i);
-          mtvec_d = csr_mtvec_masked[31:2];
+          mtvec_d = csr_mtvec_masked[31:1];
           mtvec_ce = 1'b1;
         end
         CSR_MEPC_ADDR: begin
           csr_mepc_masked = csr_mask_op(alu_res_r_i, csr_mepc_value, csr_cmd_r_i);
-          mepc_d = csr_mepc_masked[31:2];
+          mepc_d = csr_mepc_masked[31:1];
           mepc_ce = 1'b1;
         end
         CSR_MCAUSE_ADDR: begin
@@ -629,7 +631,7 @@ module rvj1_ctrl
   );
 
   register #(
-    .WORD_WIDTH(XLEN-2),
+    .WORD_WIDTH(XLEN-1),
     .RESET_VALUE(0)
   ) csr_mtvec_reg (
     .clk (clk_i),
@@ -640,7 +642,7 @@ module rvj1_ctrl
   );
 
   register #(
-    .WORD_WIDTH(XLEN-2),
+    .WORD_WIDTH(XLEN-1),
     .RESET_VALUE(0)
   ) csr_mepc_reg (
     .clk  (clk_i),
@@ -745,12 +747,12 @@ module rvj1_ctrl
   assign rvfi_csr_rmask.mtvec = '1;
   assign rvfi_csr_rdata.mtvec = csr_mtvec_value;
   assign rvfi_csr_wmask.mtvec = mtvec_ce ? '1 : '0;
-  assign rvfi_csr_wdata.mtvec = {mtvec_d, 2'b00};
+  assign rvfi_csr_wdata.mtvec = {mtvec_d, 1'b0};
 
   assign rvfi_csr_rmask.mepc = '1;
   assign rvfi_csr_rdata.mepc = csr_mepc_value;
   assign rvfi_csr_wmask.mepc = mepc_ce ? '1 : '0;
-  assign rvfi_csr_wdata.mepc = {mepc_d, 2'b00};
+  assign rvfi_csr_wdata.mepc = {mepc_d, 1'b0};
 
   assign rvfi_csr_rmask.mcause = '1;
   assign rvfi_csr_rdata.mcause = csr_mcause_value;

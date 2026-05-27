@@ -133,7 +133,7 @@ module rvj1_ifu(
     assign instr_req_data_o    = 32'b0;
     assign instr_req_write_o   = 1'b0;  // read-only interface
     assign instr_req_strobe_o  = 4'b1111;
-    assign instr_req_addr_next = (jmp_addr_valid_i) ? {jmp_addr_i, 2'b00} : (instr_req_addr_o + 4);
+    assign instr_req_addr_next = (jmp_addr_valid_i) ? {jmp_addr_i, 1'b0} : (instr_req_addr_o + 4);
     register #(
         .WORD_WIDTH(XLEN),
         .RESET_VALUE(BOOT_ADDR)

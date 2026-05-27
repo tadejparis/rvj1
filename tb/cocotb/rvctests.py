@@ -3,7 +3,7 @@ from test_ifu_rvc import *
 
 from riscvmodel.regnames import x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x28, x29, x30, x31
 from riscvmodel.csrnames import misa, mscratch, mtvec, mepc, mcause, mstatus, mtval
-from riscvmodel.program import Program
+from riscvmodel.program import Program  
 
 from collections.abc import Iterable
 
@@ -111,6 +111,41 @@ class CJALTest(Program):
             7: 7,
             8: 8,
             9: 9,}
+            
+class CJALTest2(Program):
+    """Basic test of C.JAL instruction"""
+
+    def __init__(self):
+        insns = [
+            InstructionCADDI(x2, 1),     # 0x8000_0000
+            InstructionCADDI(x2, 1),     # 0x8000_0002
+            InstructionADDI(x2, x0, 2),  # 0x8000_0004
+            InstructionADDI(x3, x0, 3),  # 0x8000_0008
+            InstructionCJAL(0x8),        # 0x8000_000c ->
+            InstructionCADDI(x11, 11),   # 0x8000_000e   |
+            InstructionADDI(x4, x0, 4),  # 0x8000_0010   |
+            InstructionADDI(x5, x0, 5),  # 0x8000_0014 <-
+            InstructionADDI(x6, x0, 6),  # 0x8000_0018
+            InstructionADDI(x7, x0, 7),  # 0x8000_001c
+            InstructionADDI(x8, x0, 8),  
+            InstructionADDI(x9, x0, 9),
+            InstructionADDI(x31, x0, 1)
+        ]
+        super().__init__(insns)
+    
+    def expects(self) -> dict:
+        return {
+            0: 0,
+            1: 0x80000014,
+            2: 2,
+            3: 3,
+            4: 0,
+            5: 0,
+            6: 6,
+            7: 7,
+            8: 8,
+            9: 9,
+            11: 0}
 
 class CLITest(Program):
     """Basic test of C.LI instruction"""
@@ -141,12 +176,29 @@ class CADDI16SPTest(Program):
             2: 96,
         }
 
+class CLUITEST(Program):
+    """Basic test of C.LI instruction"""
+
+    def __init__(self):
+        insns = [
+            InstructionCLUI(x3, 5),
+            InstructionCLUI(x4, 5)
+        ]
+        super().__init__(insns)
+    def expects(self) -> dict:
+        return {            
+            3: 0x5000,
+            4: 0x5000,
+        }
+
 
 RV32IC_TESTS = {
     "caddi":     CADDITest(),
     "caddi4spn": CADDI4SPNTest(),
-    "cswlw":       CSWLWTest(),
+    "cswlw":     CSWLWTest(),
     "cjal":      CJALTest(),
+    "cjal2":      CJALTest2(),
     "cli":       CLITest(),
-    "caddi16sp": CADDI16SPTest()
+    "caddi16sp": CADDI16SPTest(),
+    "clui":      CLUITEST()
 }

@@ -80,6 +80,9 @@ module fifo_comp #(
       end else begin
         fifo_counter <= fifo_counter - 1;
       end
+    else if (write_fire && read_fire && mem[read_ptr][1:0] != 2'b11) begin
+      fifo_counter <= fifo_counter + 1;
+    end
   end
 
   // Input data

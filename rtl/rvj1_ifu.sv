@@ -69,7 +69,7 @@ module rvj1_ifu(
   output logic            dec_compressed_o, // was compressed?
 
   input logic             jmp_addr_valid_i, // change PC to jmp_addr_i
-  input logic [XLEN-1:0]  jmp_addr_i        // The jump address
+  input logic [XLEN-2:0]  jmp_addr_i        // The jump address
 );
     typedef enum logic {
         eSTROBE_FULL  = 1'b0,  // strobe == 1111

@@ -497,7 +497,7 @@ module rvj1_top
       retired_stage.csr_wdata <= rvfi_csr_wdata;
       retired_stage.csr_wmask <= rvfi_csr_wmask;
       retired_stage.lsu_rdata <= lsu_wb_valid  ? wpc_data : '0;
-      retired_stage.jmp_addr  <= jmp_addr_valid ? {jmp_addr, 2'b00} : '0;
+      retired_stage.jmp_addr  <= jmp_addr_valid ? {jmp_addr, 1'b0} : '0;
     end
   end
 

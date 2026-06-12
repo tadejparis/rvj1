@@ -308,7 +308,7 @@ module rvj1_ctrl
   assign addr_unaligned_trap = load_addr_misaligned_i || store_addr_misaligned_i;
   // TODO: store_acess_fault should be routed to an IRQ
   assign lsu_trap = load_access_fault_i || store_access_fault_i;
-  assign instr_addr_misaligned = alu_res_r_i[1] && (state == eJUMP0);
+  assign instr_addr_misaligned = 1'b0; // misaligned jumps not possible in RVC
 
   register ebreak_insn_reg (
     .clk(clk_i), .rstn(rstn_i), .ce(1'b1), .in(ebreak_insn), .out(ebreak_insn_r)

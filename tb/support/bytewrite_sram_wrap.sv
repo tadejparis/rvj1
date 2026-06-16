@@ -93,7 +93,7 @@ module bytewrite_sram_wrap #(
                               (dram_req.addr[1:0] == 2'b00));
     assign dram_req_fire = dram_req_valid && data_rsp_ready_i;
     assign iram_req_fire = iram_req_valid && instr_rsp_ready_i;
-    assign iram_req_err = (~iram_addr_valid) || (iram_req.strobe != 4'b1111) || (iram_req.write);
+    assign iram_req_err = (~iram_addr_valid) || (iram_req.strobe != 4'b1111 && iram_req.strobe != 4'b1100) || (iram_req.write);
 
     skidbuffer #(
         .WORD_WIDTH($bits(mem_req_t))

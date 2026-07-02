@@ -65,7 +65,7 @@ module rvj1_ifu import rvj1_pkg::*; (
   output logic            dec_error_o,  // signal a instruction fetch error on next insn
 
   input logic             jmp_addr_valid_i, // change PC to jmp_addr_i
-  input logic [XLEN-3:0]  jmp_addr_i        // The jump address
+  input logic [XLEN-2:0]  jmp_addr_i        // The jump address
 );
     typedef enum logic {
         eSTROBE_FULL  = 1'b0,  // strobe == 1111
@@ -127,7 +127,7 @@ module rvj1_ifu import rvj1_pkg::*; (
     assign instr_req_data_o    = 32'b0;
     assign instr_req_write_o   = 1'b0;  // read-only interface
     assign instr_req_strobe_o  = 4'b1111;
-    assign instr_req_addr_next = (jmp_addr_valid_i) ? {jmp_addr_i, 2'b00} : (instr_req_addr_o + 4);
+    assign instr_req_addr_next = (jmp_addr_valid_i) ? {jmp_addr_i[XLEN-2:1], 2'b00} : (instr_req_addr_o + 4); // word-align address
     register #(
         .DTYPE(logic [XLEN-1:0]),
         .RESET_VALUE('0)
@@ -240,6 +240,9 @@ module rvj1_ifu import rvj1_pkg::*; (
     `endif
 
 
+    /*************************************
+    * FIFO
+    *************************************/
 
     /*************************************
     * Decoder Interface

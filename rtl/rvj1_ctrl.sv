@@ -85,7 +85,7 @@ module rvj1_ctrl import rvj1_pkg::*; #(
   output logic [XLEN-1:0]  pc_o,
 
   output logic             jmp_addr_valid_o,
-  output logic [XLEN-3:0]  jmp_addr_o,
+  output logic [XLEN-2:0]  jmp_addr_o,
 
   `ifdef RVFI
   output rvfi_csr_t rvfi_csr_rdata,
@@ -375,7 +375,7 @@ module rvj1_ctrl import rvj1_pkg::*; #(
         pc_next          = BootAddr[31:2];
         pc_mod           = 1'b1;
         jmp_addr_valid_o = 1'b1;
-        jmp_addr_o       = BootAddr[31:2];
+        jmp_addr_o       = BootAddr[31:1];
       end
 
       eRUN: begin
@@ -405,7 +405,7 @@ module rvj1_ctrl import rvj1_pkg::*; #(
 
         if (exception) begin
           jmp_addr_valid_o = 1'b1;
-          jmp_addr_o       = csr_mtvec_value[31:2];
+          jmp_addr_o       = csr_mtvec_value[31:1];
           pc_next          = csr_mtvec_value[31:2];
           pc_mod           = 1'b1;
           csr_exc_write    = 1'b1;
@@ -417,7 +417,7 @@ module rvj1_ctrl import rvj1_pkg::*; #(
         
         if (mret_insn) begin
           jmp_addr_valid_o = 1'b1;
-          jmp_addr_o       = csr_mepc_value[31:2];
+          jmp_addr_o       = csr_mepc_value[31:1];
           pc_next          = csr_mepc_value[31:2];
           pc_mod           = 1'b1;
           csr_mret_restore = 1'b1;
@@ -426,7 +426,7 @@ module rvj1_ctrl import rvj1_pkg::*; #(
         if (enter_debug) begin
           state_next       = eRUN;
           jmp_addr_valid_o = 1'b1;
-          jmp_addr_o       = DmRomAddr[31:2];
+          jmp_addr_o       = DmRomAddr[31:1];
           pc_next          = DmRomAddr[31:2];
           pc_mod           = 1'b1;
           dbg_mode_next    = 1'b1;
@@ -445,7 +445,7 @@ module rvj1_ctrl import rvj1_pkg::*; #(
         if (dret_insn) begin
           dbg_mode_next    = 1'b0;
           jmp_addr_valid_o = 1'b1;
-          jmp_addr_o       = csr_dpc_value[31:2];
+          jmp_addr_o       = csr_dpc_value[31:1];
           pc_next          = csr_dpc_value[31:2];
           pc_mod           = 1'b1;
         end
@@ -457,13 +457,13 @@ module rvj1_ctrl import rvj1_pkg::*; #(
         flush_ex_o       = 1'b1;
         jmp_addr_valid_o = 1'b1;
         flush_mem_wb_o   = 1'b1;
-        jmp_addr_o       = alu_res_r_i[31:2];
+        jmp_addr_o       = alu_res_r_i[31:1];
         pc_next          = alu_res_r_i[31:2];
         pc_mod           = 1'b1;
         if (exc_jmp_addr_misalign) begin
           pc_next           = csr_mtvec_value[31:2];
           pc_mod            = 1'b1;
-          jmp_addr_o        = csr_mtvec_value[31:2];
+          jmp_addr_o        = csr_mtvec_value[31:1];
           jmp_addr_valid_o  = 1'b1;
           stop_jmp_write_o  = 1'b1;
           csr_exc_write     = 1'b1;
@@ -479,7 +479,7 @@ module rvj1_ctrl import rvj1_pkg::*; #(
           state_next        = eRUN;
           pc_next           = csr_mtvec_value[31:2];
           pc_mod            = 1'b1;
-          jmp_addr_o        = csr_mtvec_value[31:2];
+          jmp_addr_o        = csr_mtvec_value[31:1];
           jmp_addr_valid_o  = 1'b1;
           stop_jmp_write_o  = 1'b1;
           csr_exc_write     = 1'b1;

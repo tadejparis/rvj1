@@ -146,7 +146,7 @@ module rvj1_top import rvj1_pkg::*; #(
   // CONTROL SIGNALS
   logic             instr_retiring;
   logic             jmp_addr_valid;
-  logic [XLEN-3:0]  jmp_addr;
+  logic [XLEN-2:0]  jmp_addr;
   logic             lsu_ready;
   logic             flush_ex;
   logic             flush_mem_wb;
@@ -473,11 +473,11 @@ module rvj1_top import rvj1_pkg::*; #(
     exec_stage_comb.lsu_cmd_valid  = lsu_ctrl_valid;
     exec_stage_comb.lsu_cmd        = lsu_ctrl;
     exec_stage_comb.lsu_strobe     = 4'b0;
-    exec_stage_comb.lsu_addr       =  {alu_res[31:2], 2'b00};
+    exec_stage_comb.lsu_addr       =  {alu_res[31:1], 1'b0};
     exec_stage_comb.lsu_rdata      = 32'b0;
     exec_stage_comb.lsu_wdata      = 32'b0;
     exec_stage_comb.jmp_addr_valid = 1'b0;
-    exec_stage_comb.jmp_addr       =  {alu_res[31:2], 2'b00};
+    exec_stage_comb.jmp_addr       =  {alu_res[31:1], 1'b0};
     exec_stage_comb.rd_wdata       = '0;
     exec_stage_comb.trap           = 1'b0;
     exec_stage_comb.csr_rdata      = '0;
@@ -560,7 +560,7 @@ module rvj1_top import rvj1_pkg::*; #(
   assign rvfi_rd_wdata  = retired_stage.rd_wdata;
   assign rvfi_pc_rdata  = retired_stage.pc_rdata;
   assign rvfi_pc_wdata  = retired_stage.jmp_addr_valid ? retired_stage.jmp_addr : (retired_stage.pc_rdata + 4);
-  assign rvfi_mem_addr  = {retired_stage.lsu_addr[31:2], 2'b00};
+  assign rvfi_mem_addr  = {retired_stage.lsu_addr[31:1], 1'b00};
   assign rvfi_mem_rmask = is_write_cmd(retired_stage.lsu_cmd) ? '0 : retired_stage.lsu_strobe;
   assign rvfi_mem_wmask = is_write_cmd(retired_stage.lsu_cmd) ? retired_stage.lsu_strobe : '0;
   assign rvfi_mem_rdata = retired_stage.lsu_rdata;

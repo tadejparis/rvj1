@@ -114,10 +114,20 @@ module rvj1_ifu import rvj1_pkg::*; (
     ifu_strobe_e      dec_strobe;
     logic [IDLEN-1:0] next_id;
     logic [IDLEN-1:0] next_exp_id;
-    logic [IDLEN-1:0] dec_id;
+    logic [IDLEN-1:0] rsp_id;
     logic             dec_fire;
     logic             consume_id;
     logic             consume_rsp;
+
+    logic            fifo_write_ready;
+    logic            fifo_write_valid;
+    logic [XLEN-1:0] fifo_write_data;
+    logic            fifo_read_ready;
+    logic            fifo_read_valid;
+    logic [XLEN-1:0] fifo_read_data;    
+
+    logic            rsp_err;
+    logic [XLEN-1:0] rsp_data;
 
 
     /*************************************
@@ -221,7 +231,7 @@ module rvj1_ifu import rvj1_pkg::*; (
 
     .output_valid (rsp_buff_out_valid),
     .output_ready (consume_rsp),
-    .output_data  ({dec_strobe, dec_instr_o, dec_error_o, dec_id}),
+    .output_data  ({dec_strobe, rsp_data, rsp_err, rsp_id}),
 
     // verilator lint_off PINCONNECTEMPTY
     .empty        ()
@@ -244,14 +254,45 @@ module rvj1_ifu import rvj1_pkg::*; (
     * FIFO
     *************************************/
 
+    assign fifo_write_valid = buffers_valid && id_match;
+    assign fifo_read_ready  = dec_fire;
+    assign fifo_write_data  = rsp_data; // TODO strobe
+    
+    fifo_comp fifo (
+        .clk_i          (clk_i),
+        .rstn_i         (rstn_i && state_next != eIFU_JMP),
+    
+        .write_ready_o  (fifo_write_ready),
+        .write_valid_i  (fifo_write_valid),
+        .write_data_i   (fifo_write_data),
+    
+        .read_ready_i   (fifo_read_ready),
+        .read_valid_o   (fifo_read_valid),
+        .read_data_o    (fifo_read_data),
+    
+        .input_err_i    (rsp_err),
+        .output_err_o   (dec_error_o),
+    
+        //.half_strobe_i  (rsp_strobe == eSTROBE_HALF)
+        .half_strobe_i   (1'b0)
+    );
+
+    rvc_decomp decomp (
+        .instr_i    (fifo_read_data),
+        .instr_o    (dec_instr_o),
+
+        .compr_o   (dec_compressed_o)
+
+    );
+
     /*************************************
     * Decoder Interface
     *************************************/
     assign buffers_valid = rsp_buff_out_valid && act_req_buff_out_valid && (state == eIFU_BUSY); 
-    assign consume_rsp = buffers_valid  && dec_ready_i;
-    assign id_match = (dec_id == next_exp_id);
-    assign consume_id = consume_rsp && id_match && act_id_buff_out_valid;
-    assign dec_valid_o = consume_id;
+    assign consume_rsp = buffers_valid  && dec_ready_i && fifo_write_ready;
+    assign id_match = (rsp_id == next_exp_id);
+    assign consume_id = consume_rsp && id_match && act_id_buff_out_valid && fifo_write_ready;
+    assign dec_valid_o = fifo_read_valid;
     assign dec_fire = dec_ready_i && dec_valid_o;
 
     /*************************************

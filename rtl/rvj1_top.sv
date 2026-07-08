@@ -83,6 +83,7 @@ module rvj1_top import rvj1_pkg::*; #(
   logic [XLEN-1:0]  fetched_instr;
   logic             fetched_instr_ready;
   logic             fetched_instr_error;
+  logic             fetched_compr;
 
   // DEC/EX
   logic             control;
@@ -155,6 +156,7 @@ module rvj1_top import rvj1_pkg::*; #(
   logic [RALEN-1:0] csr_regdest;
   logic             stop_jmp_write;
   logic             illegal_instr;
+  logic             compr;
 
   `ifdef RVFI
   rvfi_csr_t        rvfi_csr_rdata;
@@ -197,6 +199,7 @@ module rvj1_top import rvj1_pkg::*; #(
     .dec_valid_o        (fetched_instr_valid),
     .dec_ready_i        (fetched_instr_ready),
     .dec_error_o        (fetched_instr_error),
+    .dec_compr_o        (fetched_compr),
 
     .jmp_addr_valid_i   (jmp_addr_valid),
     .jmp_addr_i         (jmp_addr)
@@ -213,12 +216,14 @@ module rvj1_top import rvj1_pkg::*; #(
     .ifu_valid_i         (fetched_instr_valid),
     .ifu_ready_o         (fetched_instr_ready),
     .ifu_error_i         (fetched_instr_error),
+    .ifu_compr_i         (fetched_compr),
     .stall_i             (stall_ex),
     .instr_issued_o      (instr_issued),
     .instr_will_retire_o (instr_will_retire),
     .control_o           (control),
     .illegal_instr_o     (illegal_instr),
     .fetch_error_o       (fetch_error),
+    .compr_o             (compr),
     `ifdef RVFI
     .instr_exec_o        (instr_exec),
     `endif
@@ -394,6 +399,7 @@ module rvj1_top import rvj1_pkg::*; #(
     .control_i              (control),
     .instr_fetch_error_i    (fetch_error),
     .instr_will_retire_i    (instr_will_retire),
+    .compr_instr_i          (compr),
     .instr_retiring_o       (instr_retiring),
     .stall_ex_o             (stall_ex),
     .stall_mem_wb_o         (stall_mem_wb),
@@ -512,7 +518,7 @@ module rvj1_top import rvj1_pkg::*; #(
       retired_stage.csr_wdata      <= rvfi_csr_wdata;
       retired_stage.csr_wmask      <= rvfi_csr_wmask;
       retired_stage.jmp_addr_valid <= jmp_addr_valid;
-      retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 2'b00} : '0;
+      retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 1'b0}  : '0;
       retired_stage.lsu_rdata      <= lsu_wb_valid   ? wpc_data          : '0;
     end
   end

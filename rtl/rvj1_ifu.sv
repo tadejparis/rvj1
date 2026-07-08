@@ -63,6 +63,7 @@ module rvj1_ifu import rvj1_pkg::*; (
   output logic            dec_valid_o,
   input  logic            dec_ready_i,  // Decoder ready to accept new instruction (stall)
   output logic            dec_error_o,  // signal a instruction fetch error on next insn
+  output logic            dec_compr_o,
 
   input logic             jmp_addr_valid_i, // change PC to jmp_addr_i
   input logic [XLEN-2:0]  jmp_addr_i        // The jump address
@@ -254,7 +255,7 @@ module rvj1_ifu import rvj1_pkg::*; (
     * FIFO
     *************************************/
 
-    assign fifo_write_valid = buffers_valid && id_match;
+    assign fifo_write_valid = buffers_valid && id_match && consume_rsp;
     assign fifo_read_ready  = dec_fire;
     assign fifo_write_data  = rsp_data; // TODO strobe
     
@@ -281,7 +282,7 @@ module rvj1_ifu import rvj1_pkg::*; (
         .instr_i    (fifo_read_data),
         .instr_o    (dec_instr_o),
 
-        .compr_o   (dec_compressed_o)
+        .compr_o   (dec_compr_o)
 
     );
 

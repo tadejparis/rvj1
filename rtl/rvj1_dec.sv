@@ -382,7 +382,7 @@ always_ff @(posedge clk_i) begin
     ebreak_insn_o       <= ebreak_insn;
     dret_insn_o         <= dret_insn;
     fetch_error_o       <= ifu_error_i;
-    compr_o             <= ifu_compr_i;
+    compr_o             <= (state == eDEC_SECOND_CYCLE) ? compr_o : ifu_compr_i;
   end
 end
 

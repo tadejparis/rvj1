@@ -134,10 +134,12 @@ module rvj1_ifu import rvj1_pkg::*; (
     /*************************************
     * Instruction Memory Interface
     *************************************/
+    ifu_strobe_e instr_req_strobe_next, instr_req_strobe_q; // TODO change
     assign instr_req_fire = instr_req_ready_i && instr_req_valid_o;
     assign instr_req_data_o    = 32'b0;
     assign instr_req_write_o   = 1'b0;  // read-only interface
-    assign instr_req_strobe_o  = 4'b1111;
+    assign instr_req_strobe_o  = instr_req_strobe_q == eSTROBE_HALF ? 4'b1100 : 4'b1111;
+    assign instr_req_strobe_next = (jmp_addr_valid_i && jmp_addr_i[0]) ? eSTROBE_HALF : eSTROBE_FULL;
     assign instr_req_addr_next = (jmp_addr_valid_i) ? {jmp_addr_i[XLEN-2:1], 2'b00} : (instr_req_addr_o + 4); // word-align address
     register #(
         .DTYPE(logic [XLEN-1:0]),
@@ -155,6 +157,17 @@ module rvj1_ifu import rvj1_pkg::*; (
         .ce   (instr_req_fire),
         .count(instr_req_id_o)
     );
+
+    register #(
+        .DTYPE(logic),
+        .RESET_VALUE(eSTROBE_FULL)
+    ) instr_req_strobe_reg (
+        .clk  (clk_i),
+        .rstn (rstn_i),
+        .ce   (jmp_addr_valid_i || instr_req_fire),
+        .in   (instr_req_strobe_next),
+        .out  (instr_req_strobe_q)
+    ); // TODO is this necessary?
 
     assign instr_req_valid_o = (act_req_buff_inp_ready &&
                                 act_id_buff_inp_ready &&
@@ -175,10 +188,10 @@ module rvj1_ifu import rvj1_pkg::*; (
 
         .input_valid  (instr_req_fire),
         .input_ready  (act_req_buff_inp_ready),
-        .input_data   ({eSTROBE_FULL, instr_req_id_o}),
+        .input_data   ({instr_req_strobe_q, instr_req_id_o}),
 
         .output_valid (act_req_buff_out_valid),
-        .output_ready (consume_rsp),
+        .output_ready (instr_rsp_fire),
         .output_data  ({next_strobe, next_id}),
 
         // verilator lint_off PINCONNECTEMPTY
@@ -257,7 +270,7 @@ module rvj1_ifu import rvj1_pkg::*; (
 
     assign fifo_write_valid = buffers_valid && id_match && consume_rsp;
     assign fifo_read_ready  = dec_fire;
-    assign fifo_write_data  = rsp_data; // TODO strobe
+    assign fifo_write_data  = (dec_strobe == eSTROBE_HALF) ? {16'b0, rsp_data[31:16]} : rsp_data;
     
     fifo_comp fifo (
         .clk_i          (clk_i),
@@ -274,8 +287,7 @@ module rvj1_ifu import rvj1_pkg::*; (
         .input_err_i    (rsp_err),
         .output_err_o   (dec_error_o),
     
-        //.half_strobe_i  (rsp_strobe == eSTROBE_HALF)
-        .half_strobe_i   (1'b0)
+        .half_strobe_i  (dec_strobe == eSTROBE_HALF)
     );
 
     rvc_decomp decomp (

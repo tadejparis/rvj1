@@ -143,7 +143,7 @@ package rvj1_pkg;
     parameter logic [XLEN-1:0] CSR_MISA_VALUE = (
           (0 << 0)   // A - Atomic extension
         | (0 << 1)   // B - Bit Manipulation
-        | (0 << 2)   // C - Compressed extension
+        | (1 << 2)   // C - Compressed extension
         | (0 << 3)   // D - Double precison floats
         | (0 << 4)   // E - RV32E/64E base
         | (0 << 5)   // F - Single precision floats

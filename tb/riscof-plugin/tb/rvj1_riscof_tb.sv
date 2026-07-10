@@ -178,8 +178,6 @@ module rvj1_riscof_tb import rvj1_pkg::*; ();
 
   i=0;
   while (i < TIMEOUT && main_mem.mem.RAM[HaltCondCellnum] !== 1) begin
-    if (instr_rsp_data == 0 && instr_rsp_ready && instr_rsp_valid)
-      break;
     @(posedge clk);
     i=i+1;
   end

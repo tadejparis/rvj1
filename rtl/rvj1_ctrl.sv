@@ -202,7 +202,8 @@ module rvj1_ctrl import rvj1_pkg::*; #(
   assign exc_lsu_addr_unalign  = load_addr_misaligned_i || store_addr_misaligned_i;
   assign exc_lsu_access_fault  = load_access_fault_i || store_access_fault_i;  // TODO: store_acess_fault should be routed to an IRQ
   assign load_exception        = exc_lsu_addr_unalign | exc_lsu_access_fault;
-  assign exc_jmp_addr_misalign = alu_res_r_i[0] && (state == eJUMP);
+  // assign exc_jmp_addr_misalign = alu_res_r_i[0] && (state == eJUMP);
+  assign exc_jmp_addr_misalign = 1'b0;
   assign exc_exec_stage        = (ecall_insn | illegal_insn | ebreak_totrp | instr_fetch_error);
   assign exc_mem_wb_stage      = (exc_lsu_access_fault || illegal_csr_insn || exc_jmp_addr_misalign || exc_lsu_addr_unalign);
   assign exc_mem_wb_stage2     = (exc_lsu_access_fault || load_addr_misaligned_i);
@@ -499,7 +500,10 @@ module rvj1_ctrl import rvj1_pkg::*; #(
         else if (lsu_wb_i) begin
           loaded = 1'b1;
           state_next = eRUN;
-          pc_next = pc + 1; 
+          if (compr_instr_i)
+            pc_next = pc + 1;
+          else
+            pc_next = pc + 2;
           pc_mod  = 1'b1;
           flush_mem_wb_o = 1'b1;
         end

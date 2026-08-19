@@ -501,14 +501,16 @@ module rvj1_top import rvj1_pkg::*; #(
 
   always_ff @(posedge clk_i) begin
    if (valid_issue) begin
-      mem_wb_stage            <= exec_stage_comb;
-      mem_wb_stage.lsu_addr   <= mem_issue   ? alu_res    : '0;
-      mem_wb_stage.lsu_strobe <= mem_issue   ? strobe_sig : '0;
-      mem_wb_stage.lsu_wdata  <= store_issue ? regs2_data : '0;
+      mem_wb_stage                <= exec_stage_comb;
+      mem_wb_stage.lsu_addr       <= mem_issue   ? alu_res    : '0;
+      mem_wb_stage.lsu_strobe     <= mem_issue   ? strobe_sig : '0;
+      mem_wb_stage.lsu_wdata      <= store_issue ? regs2_data : '0;
+      mem_wb_stage.jmp_addr_valid <= jmp_addr_valid;
+      mem_wb_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 2'b00} : '0;
     end
   end
   always_ff @(posedge clk_i) begin
-    if (instr_retiring) begin
+    if (instr_retiring | synhr_trap) begin
       retired_stage                <= mem_wb_stage;
       retired_stage.rd_addr        <= (wpc_we                    ) ? wpc_addr : '0;
       retired_stage.rd_wdata       <= (wpc_we && (wpc_addr != '0)) ? wpc_data : '0;
@@ -520,6 +522,10 @@ module rvj1_top import rvj1_pkg::*; #(
       retired_stage.jmp_addr_valid <= jmp_addr_valid;
       retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 1'b0}  : '0;
       retired_stage.lsu_rdata      <= lsu_wb_valid   ? wpc_data          : '0;
+      if (jmp_addr_valid) begin
+        retired_stage.jmp_addr_valid <= jmp_addr_valid;
+        retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 2'b00} : '0;
+      end
     end
   end
 
@@ -527,7 +533,7 @@ module rvj1_top import rvj1_pkg::*; #(
     .clk  (clk_i),
     .rstn (rstn_i),
     .ce   (1'b1),
-    .in   (instr_retiring),
+    .in   (instr_retiring | synhr_trap),
     .out  (rvfi_valid)
   );
   cntr #(

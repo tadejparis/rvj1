@@ -23,6 +23,7 @@ sources:
     - rtl/rvj1_csr.sv
     - rtl/rvj1_dec.sv
     - rtl/rvj1_ifu.sv
+    - rtl/rvj1_ifu_rvc.sv
     - rtl/rvj1_lsu.sv
     - rtl/rvj1_regfile.sv
     - rtl/rvj1_top.sv

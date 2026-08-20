@@ -182,33 +182,65 @@ module rvj1_top import rvj1_pkg::*; #(
   /****************************************
   * INSTRUCTION FETCH STAGE
   ****************************************/
-  rvj1_ifu ifu_inst(
-    .clk_i              (clk_i),
-    .rstn_i             (rstn_i),
-    .instr_req_addr_o   (instr_req_addr_o),
-    .instr_req_data_o   (instr_req_data_o),
-    .instr_req_strobe_o (instr_req_strobe_o),
-    .instr_req_write_o  (instr_req_write_o),
-    .instr_req_id_o     (instr_req_id_o),
-    .instr_req_valid_o  (instr_req_valid_o),
-    .instr_req_ready_i  (instr_req_ready_i),
+  generate
+    if (CompressedEnabled) begin
+      rvj1_ifu_rvc ifu_inst(
+        .clk_i              (clk_i),
+        .rstn_i             (rstn_i),
+        .instr_req_addr_o   (instr_req_addr_o),
+        .instr_req_data_o   (instr_req_data_o),
+        .instr_req_strobe_o (instr_req_strobe_o),
+        .instr_req_write_o  (instr_req_write_o),
+        .instr_req_id_o     (instr_req_id_o),
+        .instr_req_valid_o  (instr_req_valid_o),
+        .instr_req_ready_i  (instr_req_ready_i),
 
-    .instr_rsp_data_i   (instr_rsp_data_i),
-    .instr_rsp_error_i  (instr_rsp_error_i),
-    .instr_rsp_id_i     (instr_rsp_id_i),
-    .instr_rsp_valid_i  (instr_rsp_valid_i),
-    .instr_rsp_ready_o  (instr_rsp_ready_o),
+        .instr_rsp_data_i   (instr_rsp_data_i),
+        .instr_rsp_error_i  (instr_rsp_error_i),
+        .instr_rsp_id_i     (instr_rsp_id_i),
+        .instr_rsp_valid_i  (instr_rsp_valid_i),
+        .instr_rsp_ready_o  (instr_rsp_ready_o),
 
-    .dec_instr_o        (fetched_instr),
-    .dec_valid_o        (fetched_instr_valid),
-    .dec_ready_i        (fetched_instr_ready),
-    .dec_error_o        (fetched_instr_error),
-    .dec_compr_o        (fetched_compr),
+        .dec_instr_o        (fetched_instr),
+        .dec_valid_o        (fetched_instr_valid),
+        .dec_ready_i        (fetched_instr_ready),
+        .dec_error_o        (fetched_instr_error),
+        .dec_compr_o        (fetched_compr),
 
-    .jmp_addr_valid_i   (jmp_addr_valid),
-    .jmp_addr_i         (jmp_addr)
-  );
+        .jmp_addr_valid_i   (jmp_addr_valid),
+        .jmp_addr_i         (jmp_addr)
+      );
 
+    end else begin
+
+      rvj1_ifu ifu_inst(
+        .clk_i              (clk_i),
+        .rstn_i             (rstn_i),
+        .instr_req_addr_o   (instr_req_addr_o),
+        .instr_req_data_o   (instr_req_data_o),
+        .instr_req_strobe_o (instr_req_strobe_o),
+        .instr_req_write_o  (instr_req_write_o),
+        .instr_req_id_o     (instr_req_id_o),
+        .instr_req_valid_o  (instr_req_valid_o),
+        .instr_req_ready_i  (instr_req_ready_i),
+
+        .instr_rsp_data_i   (instr_rsp_data_i),
+        .instr_rsp_error_i  (instr_rsp_error_i),
+        .instr_rsp_id_i     (instr_rsp_id_i),
+        .instr_rsp_valid_i  (instr_rsp_valid_i),
+        .instr_rsp_ready_o  (instr_rsp_ready_o),
+
+        .dec_instr_o        (fetched_instr),
+        .dec_valid_o        (fetched_instr_valid),
+        .dec_ready_i        (fetched_instr_ready),
+        .dec_error_o        (fetched_instr_error),
+        .dec_compr_o        (fetched_compr),
+
+        .jmp_addr_valid_i   (jmp_addr_valid),
+        .jmp_addr_i         (jmp_addr)
+      );
+    end
+  endgenerate
 
   /****************************************
   * INSTRUCTION DECODE STAGE
@@ -377,6 +409,7 @@ module rvj1_top import rvj1_pkg::*; #(
   * CONTROLLER
   *********************************************/
   rvj1_ctrl #(
+    //.CompressedEnabled (CompressedEnabled),
     .BootAddr  (BootAddr),
     .DmRomAddr (DmRomAddr),
     .MVendorId (MVendorId),

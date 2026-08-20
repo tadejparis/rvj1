@@ -63,6 +63,7 @@ module rvj1_ifu import rvj1_pkg::*; (
   output logic            dec_valid_o,
   input  logic            dec_ready_i,  // Decoder ready to accept new instruction (stall)
   output logic            dec_error_o,  // signal a instruction fetch error on next insn
+  output logic            dec_compr_o, // was compressed?
 
   input logic             jmp_addr_valid_i, // change PC to jmp_addr_i
   input logic [XLEN-3:0]  jmp_addr_i        // The jump address
@@ -250,6 +251,8 @@ module rvj1_ifu import rvj1_pkg::*; (
     assign consume_id = consume_rsp && id_match && act_id_buff_out_valid;
     assign dec_valid_o = consume_id;
     assign dec_fire = dec_ready_i && dec_valid_o;
+    
+    assign dec_compr_o = 1'b0;
 
     /*************************************
     * Finite State Machine (FSM)

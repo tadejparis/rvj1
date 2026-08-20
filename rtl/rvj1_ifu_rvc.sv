@@ -3,7 +3,7 @@
 //                                                                                //
 //                                                                                //
 //                                                                                //
-// Design Name:    rvj1_ifu                                                       //
+// Design Name:    rvj1_ifu_rvc                                                   //
 // Project Name:   riscv-jedro-1                                                  //
 // Language:       System Verilog                                                 //
 //                                                                                //
@@ -41,7 +41,7 @@
 
 /* verilator lint_off IMPORTSTAR */
 
-module rvj1_ifu import rvj1_pkg::*;(
+module rvj1_ifu_rvc import rvj1_pkg::*;(
   input logic clk_i,
   input logic rstn_i,
 

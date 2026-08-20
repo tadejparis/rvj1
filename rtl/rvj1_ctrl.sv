@@ -106,7 +106,6 @@ module rvj1_ctrl import rvj1_pkg::*; #(
 
   localparam CE_2_3_WIDTH = CompressedEnabled ? XLEN-2 : XLEN-3;
   localparam CE_1_2_WIDTH = CompressedEnabled ? 1 : 2;
-  localparam CE_1_2_ZEROS = CompressedEnabled ? 1'b0 : 2'b00;
 
   typedef enum logic [1:0] {
     eRESET,
@@ -296,10 +295,10 @@ module rvj1_ctrl import rvj1_pkg::*; #(
     else if (exc_lsu_addr_unalign || exc_jmp_addr_misalign)
       exc_mtval = alu_res_r_i;
     else if (ebreak_insn_r)
-      exc_mtval = {pc_r, CE_1_2_ZEROS}; // TODO? 1'b0 for compressed
+      exc_mtval = {pc_r, {CE_1_2_WIDTH{1'b0}}}; // TODO? 1'b0 for compressed
   end
 
-  assign pc_o = {pc, CE_1_2_ZEROS}; // TODO? 1'b0 for compressed
+  assign pc_o = {pc, {CE_1_2_WIDTH{1'b0}}}; // TODO? 1'b0 for compressed
 
   /*************************************
   * CSR

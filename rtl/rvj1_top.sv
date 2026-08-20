@@ -15,6 +15,7 @@
 
 /* verilator lint_off IMPORTSTAR */
 module rvj1_top import rvj1_pkg::*; #(
+  parameter bit          CompressedEnabled   = 1'b1,
   parameter int unsigned BootAddr   = 32'h8000_0000,
   parameter int unsigned DmRomAddr  = 32'h0000_0000,
   parameter int unsigned DmExcAddr  = 32'h0000_0000,
@@ -74,6 +75,9 @@ module rvj1_top import rvj1_pkg::*; #(
   `endif
   
 );
+
+  localparam CE_2_3_WIDTH = CompressedEnabled ? XLEN-2 : XLEN-3;
+  localparam CE_1_2_WIDTH = CompressedEnabled ? 1 : 2;
 
   /****************************************
   * SIGNAL DECLARATION
@@ -147,7 +151,7 @@ module rvj1_top import rvj1_pkg::*; #(
   // CONTROL SIGNALS
   logic             instr_retiring;
   logic             jmp_addr_valid;
-  logic [XLEN-2:0]  jmp_addr;
+  logic [CE_2_3_WIDTH:0]  jmp_addr;
   logic             lsu_ready;
   logic             flush_ex;
   logic             flush_mem_wb;
@@ -479,11 +483,11 @@ module rvj1_top import rvj1_pkg::*; #(
     exec_stage_comb.lsu_cmd_valid  = lsu_ctrl_valid;
     exec_stage_comb.lsu_cmd        = lsu_ctrl;
     exec_stage_comb.lsu_strobe     = 4'b0;
-    exec_stage_comb.lsu_addr       =  {alu_res[31:1], 1'b0};
+    exec_stage_comb.lsu_addr       =  {alu_res[31:CE_1_2_WIDTH], {CE_1_2_WIDTH{1'b0}}};
     exec_stage_comb.lsu_rdata      = 32'b0;
     exec_stage_comb.lsu_wdata      = 32'b0;
     exec_stage_comb.jmp_addr_valid = 1'b0;
-    exec_stage_comb.jmp_addr       =  {alu_res[31:1], 1'b0};
+    exec_stage_comb.jmp_addr       =  {alu_res[31:CE_1_2_WIDTH], {CE_1_2_WIDTH{1'b0}}};
     exec_stage_comb.rd_wdata       = '0;
     exec_stage_comb.trap           = 1'b0;
     exec_stage_comb.csr_rdata      = '0;
@@ -519,8 +523,10 @@ module rvj1_top import rvj1_pkg::*; #(
       retired_stage.csr_rmask      <= rvfi_csr_rmask;
       retired_stage.csr_wdata      <= rvfi_csr_wdata;
       retired_stage.csr_wmask      <= rvfi_csr_wmask;
-      retired_stage.jmp_addr_valid <= jmp_addr_valid;
-      retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 1'b0}  : '0;
+      if (CompressedEnabled) begin
+        retired_stage.jmp_addr_valid <= jmp_addr_valid;
+        retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 1'b0}  : '0;
+      end // TODO a je to prav?
       retired_stage.lsu_rdata      <= lsu_wb_valid   ? wpc_data          : '0;
       if (jmp_addr_valid) begin
         retired_stage.jmp_addr_valid <= jmp_addr_valid;
@@ -572,7 +578,7 @@ module rvj1_top import rvj1_pkg::*; #(
   assign rvfi_rd_wdata  = retired_stage.rd_wdata;
   assign rvfi_pc_rdata  = retired_stage.pc_rdata;
   assign rvfi_pc_wdata  = retired_stage.jmp_addr_valid ? retired_stage.jmp_addr : (retired_stage.pc_rdata + 4);
-  assign rvfi_mem_addr  = {retired_stage.lsu_addr[31:1], 1'b00};
+  assign rvfi_mem_addr  = {retired_stage.lsu_addr[31:CE_1_2_WIDTH], {CE_1_2_WIDTH{1'b0}}};
   assign rvfi_mem_rmask = is_write_cmd(retired_stage.lsu_cmd) ? '0 : retired_stage.lsu_strobe;
   assign rvfi_mem_wmask = is_write_cmd(retired_stage.lsu_cmd) ? retired_stage.lsu_strobe : '0;
   assign rvfi_mem_rdata = retired_stage.lsu_rdata;

@@ -295,10 +295,10 @@ module rvj1_ctrl import rvj1_pkg::*; #(
     else if (exc_lsu_addr_unalign || exc_jmp_addr_misalign)
       exc_mtval = alu_res_r_i;
     else if (ebreak_insn_r)
-      exc_mtval = {pc_r, {CE_1_2_WIDTH{1'b0}}}; // TODO? 1'b0 for compressed
+      exc_mtval = {pc_r, {CE_1_2_WIDTH{1'b0}}};
   end
 
-  assign pc_o = {pc, {CE_1_2_WIDTH{1'b0}}}; // TODO? 1'b0 for compressed
+  assign pc_o = {pc, {CE_1_2_WIDTH{1'b0}}};
 
   /*************************************
   * CSR

@@ -15,7 +15,7 @@
 
 /* verilator lint_off IMPORTSTAR */
 module rvj1_top import rvj1_pkg::*; #(
-  parameter bit          CompressedEnabled   = 1'b1,
+  parameter bit          CompressedEnabled   = 1'b0,
   parameter int unsigned BootAddr   = 32'h8000_0000,
   parameter int unsigned DmRomAddr  = 32'h0000_0000,
   parameter int unsigned DmExcAddr  = 32'h0000_0000,
@@ -409,7 +409,7 @@ module rvj1_top import rvj1_pkg::*; #(
   * CONTROLLER
   *********************************************/
   rvj1_ctrl #(
-    //.CompressedEnabled (CompressedEnabled),
+    .CompressedEnabled (CompressedEnabled),
     .BootAddr  (BootAddr),
     .DmRomAddr (DmRomAddr),
     .MVendorId (MVendorId),
@@ -543,7 +543,7 @@ module rvj1_top import rvj1_pkg::*; #(
       mem_wb_stage.lsu_strobe     <= mem_issue   ? strobe_sig : '0;
       mem_wb_stage.lsu_wdata      <= store_issue ? regs2_data : '0;
       mem_wb_stage.jmp_addr_valid <= jmp_addr_valid;
-      mem_wb_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 2'b00} : '0;
+      mem_wb_stage.jmp_addr <= jmp_addr_valid ? {jmp_addr, {CE_1_2_WIDTH{1'b0}}} : '0;
     end
   end
   always_ff @(posedge clk_i) begin
@@ -556,14 +556,13 @@ module rvj1_top import rvj1_pkg::*; #(
       retired_stage.csr_rmask      <= rvfi_csr_rmask;
       retired_stage.csr_wdata      <= rvfi_csr_wdata;
       retired_stage.csr_wmask      <= rvfi_csr_wmask;
-      if (CompressedEnabled) begin
-        retired_stage.jmp_addr_valid <= jmp_addr_valid;
-        retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 1'b0}  : '0;
-      end // TODO a je to prav?
       retired_stage.lsu_rdata      <= lsu_wb_valid   ? wpc_data          : '0;
       if (jmp_addr_valid) begin
         retired_stage.jmp_addr_valid <= jmp_addr_valid;
-        retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 2'b00} : '0;
+        if (CompressedEnabled)
+          retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 1'b0} : '0;
+        else
+          retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 2'b00} : '0;
       end
     end
   end

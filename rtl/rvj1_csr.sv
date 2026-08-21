@@ -14,6 +14,8 @@
 `include "rvj1_defines.svh"
 
 module rvj1_csr import rvj1_pkg::*; #(
+  parameter bit          CompressedEnabled   = 1'b1,
+
   parameter int unsigned MVendorId  = 32'h0000_0000,
   parameter int unsigned MArchId    = 32'h0000_0000,
   parameter int unsigned MImpId     = 32'h0000_0000,
@@ -31,12 +33,12 @@ module rvj1_csr import rvj1_pkg::*; #(
 
   input  logic             csr_exc_write_i,
   input  logic [5:0]       csr_exc_mcause_i,
-  input  logic [XLEN-2:0]  csr_exc_mepc_i,
+  input  logic [(CompressedEnabled ? XLEN-2 : XLEN-3) : 0]  csr_exc_mepc_i,
   input  logic [XLEN-1:0]  csr_exc_mtval_i,
   input  logic             csr_mret_restore_i,
   input  logic             csr_dbg_write_i,
   input  logic [2:0]       csr_dbg_cause_i,
-  input  logic [XLEN-2:0]  csr_dbg_dpc_i,
+  input  logic [(CompressedEnabled ? XLEN-2 : XLEN-3) : 0]  csr_dbg_dpc_i, 
 
   input  logic             dbg_mode_i,
   input  logic             stall_mem_wb_i,
@@ -69,6 +71,10 @@ module rvj1_csr import rvj1_pkg::*; #(
  `endif
 
 );
+
+  localparam CE_2_3_WIDTH = CompressedEnabled ? XLEN-2 : XLEN-3;
+  localparam CE_1_2_WIDTH = CompressedEnabled ? 1 : 2;
+
   // CSR register signal defintions
   //     +------+
   // --->|D     |
@@ -82,7 +88,7 @@ module rvj1_csr import rvj1_pkg::*; #(
   miep_reg_t       mip_d, mip_q;
   assign mie_q = '0; // TODO
   logic [XLEN-3:0] mtvec_d, mtvec_q; // only direct mode supported
-  logic [XLEN-2:0] mepc_d, mepc_q;
+  logic [CE_2_3_WIDTH:0] mepc_d, mepc_q;
   logic [5:0]      mcause_d, mcause_q; // 1 bit for IRQ/EXC, 5 bits-code=>log2(19)=4.24
   logic [XLEN-1:0] mtval_d, mtval_q;
   logic [XLEN-1:0] mscratch_d, mscratch_q;
@@ -163,7 +169,7 @@ module rvj1_csr import rvj1_pkg::*; #(
     | ({16'b0, mip_q.irqs}  << CSR_MIEP_PLATFORM_IRQS_BIT)
     | 32'b0
   );
-  assign csr_mepc_value     = {mepc_q, 1'b0}; // IALIGN=32
+  assign csr_mepc_value     = {mepc_q, {CE_1_2_WIDTH{1'b0}}}; // IALIGN=32
   assign csr_mtvec_value    = {mtvec_q, 2'b00}; // direct mode only! (no vector irqs)
   assign csr_mcause_value   = {mcause_q[5], 26'b0, mcause_q[4:0]};
   assign csr_mtval_value    = mtval_q;
@@ -258,7 +264,7 @@ module rvj1_csr import rvj1_pkg::*; #(
         // Machine Trap Setup
         CSR_MSTATUS_ADDR:    csr_value = csr_mstatus_value;
         CSR_MSTATUSH_ADDR:   csr_value = CSR_MSTATUSH_VALUE;
-        CSR_MISA_ADDR:       csr_value = CSR_MISA_VALUE;
+        CSR_MISA_ADDR:       csr_value = csr_misa_value(CompressedEnabled);
         CSR_MEDELEG_ADDR:    csr_value = CSR_MEDELEG_VALUE;
         CSR_MEDELEGH_ADDR:   csr_value = CSR_MEDELEGH_VALUE;
         CSR_MIDELEG_ADDR:    csr_value = CSR_MIDELEG_VALUE;
@@ -340,7 +346,7 @@ module rvj1_csr import rvj1_pkg::*; #(
         end
         CSR_MEPC_ADDR: begin
           csr_mepc_masked = csr_mask_op(alu_res_r_i, csr_mepc_value, csr_cmd_r_i);
-          mepc_d          = csr_mepc_masked[31:1];
+          mepc_d          = csr_mepc_masked[31:CE_1_2_WIDTH];
           mepc_ce         = 1'b1;
         end
         CSR_MCAUSE_ADDR: begin
@@ -398,7 +404,7 @@ module rvj1_csr import rvj1_pkg::*; #(
     if (csr_dbg_write_i) begin
       dcsr_d.cause = csr_dbg_cause_i;
       dcsr_ce      = 1'b1;
-      dpc_d        = {csr_dbg_dpc_i, 1'b0};
+      dpc_d        = {csr_dbg_dpc_i, {CE_1_2_WIDTH{1'b0}}};
       dpc_ce       = 1'b1;
     end
   end
@@ -467,7 +473,7 @@ module rvj1_csr import rvj1_pkg::*; #(
   );
 
   register #(
-    .DTYPE(logic [XLEN-2:0]),
+    .DTYPE(logic [CE_2_3_WIDTH:0]),
     .RESET_VALUE(0)
   ) csr_mepc_reg (
     .clk  (clk_i),
@@ -581,7 +587,7 @@ module rvj1_csr import rvj1_pkg::*; #(
     assign rvfi_csr_rmask.mepc = '1;
     assign rvfi_csr_rdata.mepc = csr_mepc_value;
     assign rvfi_csr_wmask.mepc = mepc_ce ? '1 : '0;
-    assign rvfi_csr_wdata.mepc = {mepc_d, 1'b0};
+    assign rvfi_csr_wdata.mepc = {mepc_d, {CE_1_2_WIDTH{1'b0}}};
 
     assign rvfi_csr_rmask.mcause = '1;
     assign rvfi_csr_rdata.mcause = csr_mcause_value;

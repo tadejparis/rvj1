@@ -183,8 +183,8 @@ module rvj1_top import rvj1_pkg::*; #(
   * INSTRUCTION FETCH STAGE
   ****************************************/
   generate
-    if (CompressedEnabled) begin
-      rvj1_ifu_rvc ifu_inst(
+    if (CompressedEnabled) begin : rvc_ifu_gen
+      rvj1_ifu_rvc ifu_inst_rvc(
         .clk_i              (clk_i),
         .rstn_i             (rstn_i),
         .instr_req_addr_o   (instr_req_addr_o),
@@ -211,7 +211,7 @@ module rvj1_top import rvj1_pkg::*; #(
         .jmp_addr_i         (jmp_addr)
       );
 
-    end else begin
+    end else begin : rv32_ifu_gen
 
       rvj1_ifu ifu_inst(
         .clk_i              (clk_i),
@@ -241,7 +241,7 @@ module rvj1_top import rvj1_pkg::*; #(
       );
     end
   endgenerate
-
+  
   /****************************************
   * INSTRUCTION DECODE STAGE
   ****************************************/
@@ -559,10 +559,7 @@ module rvj1_top import rvj1_pkg::*; #(
       retired_stage.lsu_rdata      <= lsu_wb_valid   ? wpc_data          : '0;
       if (jmp_addr_valid) begin
         retired_stage.jmp_addr_valid <= jmp_addr_valid;
-        if (CompressedEnabled)
-          retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 1'b0} : '0;
-        else
-          retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, 2'b00} : '0;
+        retired_stage.jmp_addr       <= jmp_addr_valid ? {jmp_addr, {CE_1_2_WIDTH{1'b0}}} : '0;
       end
     end
   end

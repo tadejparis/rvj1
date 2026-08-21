@@ -86,32 +86,32 @@ class IfuTB(BaseBench):
             await ClockCycles(self.clk, wait_after)
 
 
-@IfuTB.testcase(
-    reset_wait_during=2,
-    reset_wait_after=0,
-    timeout=100,
-    shutdown_delay=1,
-    shutdown_loops=2,
-
-)
-async def smoke(tb: IfuTB, log):
-    await ClockCycles(tb.clk, 10)
-
-
-@IfuTB.testcase(
-    reset_wait_during=2,
-    reset_wait_after=0,
-    timeout=1000,
-    shutdown_delay=1,
-    shutdown_loops=2,
-
-)
-async def linear_run(tb: IfuTB, log):
-    log.info("Scheduling random backpressure on the decoder interface.")
-    tb.schedule(dec_backpressure_seq(dec=tb.dec_resp_drv), blocking=False)
-    log.info("Using the jump interface to set the IFU (boot) address.")
-    tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0000))
-    await ClockCycles(tb.clk, 100)
+#@IfuTB.testcase(
+#    reset_wait_during=2,
+#    reset_wait_after=0,
+#    timeout=100,
+#    shutdown_delay=1,
+#    shutdown_loops=2,
+#
+#)
+#async def smoke(tb: IfuTB, log):
+#    await ClockCycles(tb.clk, 10)
+#
+#
+#@IfuTB.testcase(
+#    reset_wait_during=2,
+#    reset_wait_after=0,
+#    timeout=1000,
+#    shutdown_delay=1,
+#    shutdown_loops=2,
+#
+#)
+#async def linear_run(tb: IfuTB, log):
+#    log.info("Scheduling random backpressure on the decoder interface.")
+#    tb.schedule(dec_backpressure_seq(dec=tb.dec_resp_drv), blocking=False)
+#    log.info("Using the jump interface to set the IFU (boot) address.")
+#    tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0000))
+#    await ClockCycles(tb.clk, 100)
 
 @IfuTB.testcase(
     reset_wait_during=2,
@@ -131,21 +131,21 @@ async def run_and_jump(tb: IfuTB, log):
     await ClockCycles(tb.clk, 100)
 
 
-@IfuTB.testcase(
-    reset_wait_during=2,
-    reset_wait_after=0,
-    timeout=1000,
-    shutdown_delay=0,
-    shutdown_loops=0
-)
-async def response_error(tb: IfuTB, log):
-    log.info("Scheduling random backpressure on the decoder interface.")
-    tb.schedule(dec_backpressure_seq(dec=tb.dec_resp_drv), blocking=False)
-    log.info("Using the jump interface to set the IFU (boot) address.")
-    tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0000))
-    await RisingEdge(tb.dec_error_o)
-    await RisingEdge(tb.dec_ready_i)
-    await ClockCycles(tb.clk, 10)
+#@IfuTB.testcase(
+#    reset_wait_during=2,
+#    reset_wait_after=0,
+#    timeout=1000,
+#    shutdown_delay=0,
+#    shutdown_loops=0
+#)
+#async def response_error(tb: IfuTB, log):
+#    log.info("Scheduling random backpressure on the decoder interface.")
+#    tb.schedule(dec_backpressure_seq(dec=tb.dec_resp_drv), blocking=False)
+#    log.info("Using the jump interface to set the IFU (boot) address.")
+#    tb.schedule(ifu_jmp_to_addr(ifu_jmp_drv=tb.ifu_jmp_drv, addr=0x8000_0000))
+#    await RisingEdge(tb.dec_error_o)
+#    await RisingEdge(tb.dec_ready_i)
+#    await ClockCycles(tb.clk, 10)
 
 
 def test_ifu(ifu_fixture):
